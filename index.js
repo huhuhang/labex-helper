@@ -20,82 +20,97 @@
         left: 20px;
         bottom: 20px;
         z-index: 9999;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
     `;
 
-    // Common style for creating buttons
-    const createButton = (text, icon) => {
-        const button = document.createElement('button');
-        button.innerHTML = `${icon} ${text}`;
-        button.style.cssText = `
-            padding: 8px 16px;
-            background-color: rgba(76, 175, 80, 0.9);
-            color: white;
+    // Create menu container
+    const menuContainer = document.createElement('div');
+    menuContainer.style.cssText = `
+        display: none;
+        flex-direction: column;
+        gap: 8px;
+        background: white;
+        padding: 10px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        margin-bottom: 10px;
+    `;
+
+    // Common style for creating menu items
+    const createMenuItem = (text, icon) => {
+        const item = document.createElement('button');
+        item.innerHTML = `${icon} ${text}`;
+        item.style.cssText = `
+            padding: 8px 12px;
+            background: none;
             border: none;
-            border-radius: 6px;
+            border-radius: 4px;
             cursor: pointer;
             font-size: 14px;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            color: #333;
             display: flex;
             align-items: center;
             gap: 8px;
-            min-width: 140px;
+            width: 100%;
+            text-align: left;
+            transition: background-color 0.2s;
         `;
 
-        button.onmouseover = function () {
-            this.style.backgroundColor = 'rgba(69, 160, 73, 0.95)';
-            this.style.transform = 'translateY(-2px)';
-            this.style.boxShadow = '0 4px 8px rgba(0,0,0,0.2)';
+        item.onmouseover = function () {
+            this.style.backgroundColor = '#f0f0f0';
         };
-        button.onmouseout = function () {
-            this.style.backgroundColor = 'rgba(76, 175, 80, 0.9)';
-            this.style.transform = 'translateY(0)';
-            this.style.boxShadow = '0 2px 5px rgba(0,0,0,0.2)';
+        item.onmouseout = function () {
+            this.style.backgroundColor = 'transparent';
         };
 
-        return button;
+        return item;
     };
 
-    // Create language switch button
-    const langButton = createButton('Switch Language', '🇨🇳');
+    // Create floating button
+    const floatingButton = document.createElement('button');
+    floatingButton.innerHTML = '⚙️';
+    floatingButton.style.cssText = `
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: rgba(76, 175, 80, 0.9);
+        border: none;
+        cursor: pointer;
+        font-size: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        transition: all 0.3s ease;
+    `;
 
-    // Create mode switch button
-    const modeButton = createButton('Switch Mode', '📚');
-
-    // Create clear cache button
-    const clearCacheButton = createButton('Clear Cache', '🗑️');
+    // Create menu items
+    const langMenuItem = createMenuItem('Switch Language', '🌐');
+    const modeMenuItem = createMenuItem('Switch Mode', '📚');
+    const clearCacheMenuItem = createMenuItem('Clear Cache', '🗑️');
 
     // Language switch functionality
-    langButton.onclick = function () {
+    langMenuItem.onclick = function () {
         const currentUrl = window.location.href;
         let newUrl;
 
         if (currentUrl.includes('/zh/')) {
             newUrl = currentUrl.replace('/zh/', '/');
-            this.innerHTML = '🇺🇸 Switch Language';
         } else {
             newUrl = currentUrl.replace('labex.io/', 'labex.io/zh/');
-            this.innerHTML = '🇨🇳 Switch Language';
         }
 
         window.location.href = newUrl;
     };
 
     // Mode switch functionality
-    modeButton.onclick = function () {
+    modeMenuItem.onclick = function () {
         const currentUrl = window.location.href;
         let newUrl;
 
         if (currentUrl.includes('/tutorials/')) {
             newUrl = currentUrl.replace('/tutorials/', '/labs/');
-            this.innerHTML = '💻 Switch Mode';
         } else if (currentUrl.includes('/labs/')) {
             newUrl = currentUrl.replace('/labs/', '/tutorials/');
-            this.innerHTML = '📚 Switch Mode';
         }
 
         if (newUrl) {
@@ -104,19 +119,12 @@
     };
 
     // Clear cache functionality
-    clearCacheButton.onclick = async function () {
+    clearCacheMenuItem.onclick = async function () {
         try {
-            // Clear all caches
             const cacheNames = await caches.keys();
             await Promise.all(cacheNames.map(name => caches.delete(name)));
-
-            // Clear localStorage
             localStorage.clear();
-
-            // Clear sessionStorage
             sessionStorage.clear();
-
-            // Reload the page
             window.location.reload(true);
         } catch (error) {
             console.error('Failed to clear cache:', error);
@@ -124,23 +132,36 @@
         }
     };
 
-    // Initialize button text
-    if (window.location.href.includes('/zh/')) {
-        langButton.innerHTML = '🇺🇸 Switch Language';
-    } else {
-        langButton.innerHTML = '🇨🇳 Switch Language';
-    }
+    // Toggle menu visibility
+    let isMenuVisible = false;
+    floatingButton.onclick = function (e) {
+        e.stopPropagation();
+        isMenuVisible = !isMenuVisible;
+        menuContainer.style.display = isMenuVisible ? 'flex' : 'none';
+        floatingButton.style.transform = isMenuVisible ? 'rotate(180deg)' : 'rotate(0)';
+    };
 
-    if (window.location.href.includes('/tutorials/')) {
-        modeButton.innerHTML = '💻 Switch Mode';
-    } else if (window.location.href.includes('/labs/')) {
-        modeButton.innerHTML = '📚 Switch Mode';
-    }
+    // Close menu when clicking outside
+    document.addEventListener('click', function () {
+        if (isMenuVisible) {
+            isMenuVisible = false;
+            menuContainer.style.display = 'none';
+            floatingButton.style.transform = 'rotate(0)';
+        }
+    });
 
-    // Add buttons to container
-    buttonContainer.appendChild(langButton);
-    buttonContainer.appendChild(modeButton);
-    buttonContainer.appendChild(clearCacheButton);
+    menuContainer.addEventListener('click', function (e) {
+        e.stopPropagation();
+    });
+
+    // Add items to menu
+    menuContainer.appendChild(langMenuItem);
+    menuContainer.appendChild(modeMenuItem);
+    menuContainer.appendChild(clearCacheMenuItem);
+
+    // Add elements to container
+    buttonContainer.appendChild(menuContainer);
+    buttonContainer.appendChild(floatingButton);
 
     // Add container to page
     document.body.appendChild(buttonContainer);
