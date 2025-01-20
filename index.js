@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         LabEx Helper
 // @namespace    http://tampermonkey.net/
-// @version      1.3
+// @version      1.4
 // @description  Helper script for labex.io website
 // @author       huhuhang
 // @match        https://labex.io/*
@@ -66,6 +66,9 @@
     // Create mode switch button
     const modeButton = createButton('Switch Mode', '📚');
 
+    // Create clear cache button
+    const clearCacheButton = createButton('Clear Cache', '🗑️');
+
     // Language switch functionality
     langButton.onclick = function () {
         const currentUrl = window.location.href;
@@ -100,6 +103,27 @@
         }
     };
 
+    // Clear cache functionality
+    clearCacheButton.onclick = async function () {
+        try {
+            // Clear all caches
+            const cacheNames = await caches.keys();
+            await Promise.all(cacheNames.map(name => caches.delete(name)));
+
+            // Clear localStorage
+            localStorage.clear();
+
+            // Clear sessionStorage
+            sessionStorage.clear();
+
+            // Reload the page
+            window.location.reload(true);
+        } catch (error) {
+            console.error('Failed to clear cache:', error);
+            alert('Failed to clear cache. Please try again.');
+        }
+    };
+
     // Initialize button text
     if (window.location.href.includes('/zh/')) {
         langButton.innerHTML = '🇺🇸 Switch Language';
@@ -116,6 +140,7 @@
     // Add buttons to container
     buttonContainer.appendChild(langButton);
     buttonContainer.appendChild(modeButton);
+    buttonContainer.appendChild(clearCacheButton);
 
     // Add container to page
     document.body.appendChild(buttonContainer);
