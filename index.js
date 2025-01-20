@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         LabEx Helper
 // @namespace    http://tampermonkey.net/
-// @version      1.4
+// @version      1.5
 // @description  Helper script for labex.io website
 // @author       huhuhang
 // @match        https://labex.io/*
@@ -67,7 +67,9 @@
 
     // Create floating button
     const floatingButton = document.createElement('button');
-    floatingButton.innerHTML = '⚙️';
+    floatingButton.innerHTML = `<svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M21.5 0C22.3284 0 23 0.671573 23 1.5V6.5C23 7.32843 22.3284 8 21.5 8H20.997V9.515L29.7172 21.6234C29.8704 21.8362 29.9647 22.0846 29.9918 22.3436L30 22.5V28.5C30 29.3284 29.3284 30 28.5 30H1.5C0.671573 30 0 29.3284 0 28.5V22.5C0 22.1854 0.098913 21.8788 0.282747 21.6235L9.001 9.515V8H8.5C7.7203 8 7.07955 7.40511 7.00687 6.64446L7 6.5V1.5C7 0.671573 7.67157 0 8.5 0H21.5ZM20 3H10V5H10.5011C11.2807 5 11.9215 5.59489 11.9942 6.35554L12.0011 6.5V9.87827C12.0011 10.272 11.8773 10.6558 11.6472 10.9753L3 22.983V27H27V22.984L18.3519 10.9754C18.1547 10.7015 18.0355 10.3804 18.0055 10.0463L17.998 9.87826V6.5C17.998 5.67157 18.6695 5 19.498 5H20V3ZM19.3999 21C20.2283 21 20.8999 21.6716 20.8999 22.5C20.8999 23.3284 20.2283 24 19.3999 24H15.8C14.9716 24 14.3 23.3284 14.3 22.5C14.3 21.6716 14.9716 21 15.8 21H19.3999ZM11.729 15.4393L14.3973 18.1077C14.9831 18.6935 14.9831 19.6432 14.3973 20.229L11.729 22.8973C11.1432 23.4831 10.1935 23.4831 9.60767 22.8973C9.02188 22.3115 9.02188 21.3618 9.60767 20.776L11.2149 19.1687L9.60767 17.5607C9.05634 17.0093 9.02391 16.1356 9.51037 15.5463L9.60767 15.4393C10.1935 14.8536 11.1432 14.8536 11.729 15.4393Z" fill="white"/>
+    </svg>`;
     floatingButton.style.cssText = `
         width: 48px;
         height: 48px;
@@ -75,7 +77,6 @@
         background: rgba(76, 175, 80, 0.9);
         border: none;
         cursor: pointer;
-        font-size: 24px;
         display: flex;
         align-items: center;
         justify-content: center;
