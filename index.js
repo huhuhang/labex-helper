@@ -80,9 +80,7 @@
 
     // Modern floating button
     const floatingButton = document.createElement('button');
-    floatingButton.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M12 3C7.58172 3 4 6.58172 4 11C4 15.4183 7.58172 19 12 19C16.4183 19 20 15.4183 20 11C20 6.58172 16.4183 3 12 3ZM3 11C3 6.02944 7.02944 2 12 2C16.9706 2 21 6.02944 21 11C21 15.9706 16.9706 20 12 20C7.02944 20 3 15.9706 3 11ZM12 7C12.5523 7 13 7.44772 13 8V14C13 14.5523 12.5523 15 12 15C11.4477 15 11 14.5523 11 14V8C11 7.44772 11.4477 7 12 7ZM12 16C12.5523 16 13 16.4477 13 17C13 17.5523 12.5523 18 12 18C11.4477 18 11 17.5523 11 17C11 16.4477 11.4477 16 12 16Z" fill="currentColor"/>
-    </svg>`;
+    floatingButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="12" y1="16" x2="12" y2="16"></line></svg>`;
     floatingButton.style.cssText = `
         width: 56px;
         height: 56px;
@@ -98,20 +96,20 @@
         color: white;
     `;
 
-    floatingButton.onmouseover = function() {
+    floatingButton.onmouseover = function () {
         this.style.transform = 'scale(1.05)';
         this.style.boxShadow = '0 6px 24px rgba(46, 126, 238, 0.4)';
     };
 
-    floatingButton.onmouseout = function() {
+    floatingButton.onmouseout = function () {
         this.style.transform = 'scale(1)';
         this.style.boxShadow = '0 4px 20px rgba(46, 126, 238, 0.3)';
     };
 
-    // Create menu items
-    const langMenuItem = createMenuItem('Switch Language', '🌐');
-    const modeMenuItem = createMenuItem('Switch Mode', '📚');
-    const clearCacheMenuItem = createMenuItem('Clear Cache', '🗑');
+    // Create menu items with Feather icons
+    const langMenuItem = createMenuItem('Switch Language', '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>');
+    const modeMenuItem = createMenuItem('Lab ⇌ Tutorial', '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>');
+    const clearCacheMenuItem = createMenuItem('Clear Cache', '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>');
 
     // Modern language submenu
     const langSubmenu = document.createElement('div');
@@ -133,17 +131,17 @@
     `;
 
     const languages = [
-        { code: 'en', name: 'English' },
-        { code: 'zh', name: '中文' },
-        { code: 'es', name: 'Español' },
-        { code: 'fr', name: 'Français' },
-        { code: 'de', name: 'Deutsch' },
-        { code: 'ja', name: '日本語' },
-        { code: 'ru', name: 'Русский' }
+        { code: 'en', name: 'English', flag: '🇬🇧' },
+        { code: 'zh', name: '中文', flag: '🇨🇳' },
+        { code: 'es', name: 'Español', flag: '🇪🇸' },
+        { code: 'fr', name: 'Français', flag: '🇫🇷' },
+        { code: 'de', name: 'Deutsch', flag: '🇩🇪' },
+        { code: 'ja', name: '日本語', flag: '🇯🇵' },
+        { code: 'ru', name: 'Русский', flag: '🇷🇺' }
     ];
 
     languages.forEach(lang => {
-        const langOption = createMenuItem(lang.name, '🌐');
+        const langOption = createMenuItem(lang.name, lang.flag);
         langOption.onclick = function (e) {
             e.stopPropagation();
             const currentUrl = window.location.href;
