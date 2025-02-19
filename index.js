@@ -87,21 +87,77 @@
     // Create menu items
     const langMenuItem = createMenuItem('Switch Language', '🌐');
     const modeMenuItem = createMenuItem('Switch Mode', '📚');
-    const clearCacheMenuItem = createMenuItem('Clear Cache', '🗑️');
+    const clearCacheMenuItem = createMenuItem('Clear Cache', '🗑');
 
-    // Language switch functionality
-    langMenuItem.onclick = function () {
-        const currentUrl = window.location.href;
-        let newUrl;
+    // Create language submenu
+    const langSubmenu = document.createElement('div');
+    langSubmenu.style.cssText = `
+        display: none;
+        position: absolute;
+        left: 0;
+        bottom: 100%;
+        background: white;
+        padding: 8px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        margin-bottom: 8px;
+        flex-direction: column;
+        gap: 4px;
+    `;
 
-        if (currentUrl.includes('/zh/')) {
-            newUrl = currentUrl.replace('/zh/', '/');
-        } else {
-            newUrl = currentUrl.replace('labex.io/', 'labex.io/zh/');
-        }
+    const languages = [
+        { code: 'en', name: 'English' },
+        { code: 'zh', name: '中文' },
+        { code: 'es', name: 'Español' },
+        { code: 'fr', name: 'Français' },
+        { code: 'de', name: 'Deutsch' },
+        { code: 'ja', name: '日本語' },
+        { code: 'ru', name: 'Русский' }
+    ];
 
-        window.location.href = newUrl;
+    languages.forEach(lang => {
+        const langOption = createMenuItem(lang.name, '🌐');
+        langOption.onclick = function (e) {
+            e.stopPropagation();
+            const currentUrl = window.location.href;
+            const baseUrl = 'labex.io/';
+            const urlParts = currentUrl.split(baseUrl);
+
+            if (urlParts.length > 1) {
+                let path = urlParts[1];
+                path = path.replace(/^(zh|es|fr|de|ja|ru)\//, '');
+                const newPath = lang.code === 'en' ? path : `${lang.code}/${path}`;
+                const newUrl = `${urlParts[0]}${baseUrl}${newPath}`;
+                window.location.href = newUrl;
+            }
+        };
+        langSubmenu.appendChild(langOption);
+    });
+
+    // Toggle language submenu on click
+    let isLangSubmenuVisible = false;
+    langMenuItem.onclick = function (e) {
+        e.stopPropagation();
+        isLangSubmenuVisible = !isLangSubmenuVisible;
+        langSubmenu.style.display = isLangSubmenuVisible ? 'flex' : 'none';
     };
+
+    const langMenuWrapper = document.createElement('div');
+    langMenuWrapper.style.position = 'relative';
+    langMenuWrapper.appendChild(langMenuItem);
+    langMenuWrapper.appendChild(langSubmenu);
+
+    // Close language submenu when clicking outside
+    document.addEventListener('click', function () {
+        if (isLangSubmenuVisible) {
+            isLangSubmenuVisible = false;
+            langSubmenu.style.display = 'none';
+        }
+    });
+
+    langSubmenu.addEventListener('click', function (e) {
+        e.stopPropagation();
+    });
 
     // Mode switch functionality
     modeMenuItem.onclick = function () {
@@ -155,8 +211,8 @@
         e.stopPropagation();
     });
 
-    // Add items to menu
-    menuContainer.appendChild(langMenuItem);
+    // Update menu items addition
+    menuContainer.appendChild(langMenuWrapper);
     menuContainer.appendChild(modeMenuItem);
     menuContainer.appendChild(clearCacheMenuItem);
 
