@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         LabEx Helper
 // @namespace    http://tampermonkey.net/
-// @version      1.5
+// @version      1.6
 // @description  Helper script for labex.io website
 // @author       huhuhang
 // @match        https://labex.io/*
