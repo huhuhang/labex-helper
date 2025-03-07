@@ -42,18 +42,19 @@
     `;
 
     // Modern style for menu items
-    const createMenuItem = (text, icon) => {
+    const createMenuItem = (text, icon, isDisabled = false) => {
         const item = document.createElement('button');
         item.innerHTML = `${icon} ${text}`;
-        item.style.cssText = `
+
+        const baseStyles = `
             padding: 10px 14px;
             background: transparent;
             border: none;
             border-radius: 12px;
-            cursor: pointer;
+            cursor: ${isDisabled ? 'not-allowed' : 'pointer'};
             font-size: 14px;
             font-weight: 500;
-            color: #374151;
+            color: ${isDisabled ? '#9CA3AF' : '#374151'};
             display: flex;
             align-items: center;
             gap: 10px;
@@ -62,18 +63,23 @@
             transition: all 0.2s ease;
             position: relative;
             overflow: hidden;
+            opacity: ${isDisabled ? '0.6' : '1'};
         `;
 
-        item.onmouseover = function () {
-            this.style.backgroundColor = 'rgba(46, 126, 238, 0.08)';
-            this.style.transform = 'translateX(4px)';
-            this.style.color = '#2E7EEE';
-        };
-        item.onmouseout = function () {
-            this.style.backgroundColor = 'transparent';
-            this.style.transform = 'translateX(0)';
-            this.style.color = '#374151';
-        };
+        item.style.cssText = baseStyles;
+
+        if (!isDisabled) {
+            item.onmouseover = function () {
+                this.style.backgroundColor = 'rgba(46, 126, 238, 0.08)';
+                this.style.transform = 'translateX(4px)';
+                this.style.color = '#2E7EEE';
+            };
+            item.onmouseout = function () {
+                this.style.backgroundColor = 'transparent';
+                this.style.transform = 'translateX(0)';
+                this.style.color = '#374151';
+            };
+        }
 
         return item;
     };
@@ -181,11 +187,14 @@
 
     floatingButton.appendChild(closeButton);
 
-    // Create menu items with Feather icons
+    // Create menu items with Feather icons - check routes for disabled state
+    const isLabsRoute = window.location.href.includes('/labs/');
+    const isTutorialsRoute = window.location.href.includes('/tutorials/');
+
     const langMenuItem = createMenuItem('Switch Language', '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>');
-    const modeMenuItem = createMenuItem('Lab ⇌ Tutorial', '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>');
+    const modeMenuItem = createMenuItem('Lab ⇌ Tutorial', '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>', !(isLabsRoute || isTutorialsRoute));
     const clearCacheMenuItem = createMenuItem('Clear Cache', '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>');
-    const zenModeMenuItem = createMenuItem('Zen Mode', '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"></path></svg>');
+    const zenModeMenuItem = createMenuItem('Zen Mode', '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"></path></svg>', !isLabsRoute);
 
     // Modern language submenu
     const langSubmenu = document.createElement('div');
@@ -262,6 +271,9 @@
 
     // Mode switch functionality
     modeMenuItem.onclick = function () {
+        // Skip if disabled
+        if (!(isLabsRoute || isTutorialsRoute)) return;
+
         const currentUrl = window.location.href;
         let newUrl;
 
@@ -292,6 +304,9 @@
 
     // Zen Mode functionality
     zenModeMenuItem.onclick = function () {
+        // Skip if disabled
+        if (!isLabsRoute) return;
+
         const currentUrl = window.location.href;
         // Only work on lab pages
         if (currentUrl.includes('/labs/')) {
@@ -311,6 +326,15 @@
             window.location.href = url.toString();
         }
     };
+
+    // Add tooltips to explain disabled state
+    if (!isLabsRoute) {
+        zenModeMenuItem.title = "Zen Mode is only available on Lab pages";
+    }
+
+    if (!(isLabsRoute || isTutorialsRoute)) {
+        modeMenuItem.title = "Mode switch is only available on Lab or Tutorial pages";
+    }
 
     // Update menu items addition
     menuContainer.appendChild(langMenuWrapper);
