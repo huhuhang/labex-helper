@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         LabEx Helper
 // @namespace    http://tampermonkey.net/
-// @version      1.6
+// @version      1.7
 // @description  Helper script for labex.io website
 // @author       huhuhang
 // @match        https://labex.io/*
@@ -103,31 +103,6 @@
         position: relative;
     `;
 
-    // Create close button
-    const closeButton = document.createElement('button');
-    closeButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
-    closeButton.style.cssText = `
-        position: absolute;
-        top: -8px;
-        right: -8px;
-        width: 22px;
-        height: 22px;
-        border-radius: 50%;
-        background: #FF5252;
-        border: none;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-        transition: all 0.2s ease;
-        color: white;
-        padding: 0;
-        opacity: 0;
-        transform: scale(0.8);
-        z-index: 10000;
-    `;
-
     // Toggle menu visibility
     let isMenuVisible = false;
     floatingButton.onclick = function (e) {
@@ -148,44 +123,16 @@
         e.stopPropagation();
     });
 
-    // Show close button on hover
+    // Button hover effect
     floatingButton.onmouseover = function () {
         this.style.transform = 'scale(1.05)';
         this.style.boxShadow = '0 6px 24px rgba(46, 126, 238, 0.4)';
-        closeButton.style.opacity = '1';
-        closeButton.style.transform = 'scale(1)';
     };
 
     floatingButton.onmouseout = function () {
         this.style.transform = 'scale(1)';
         this.style.boxShadow = '0 4px 20px rgba(46, 126, 238, 0.3)';
-        closeButton.style.opacity = '0';
-        closeButton.style.transform = 'scale(0.8)';
     };
-
-    // Handle close button hover separately to prevent flickering
-    closeButton.onmouseover = function (e) {
-        e.stopPropagation();
-        this.style.opacity = '1';
-        this.style.transform = 'scale(1.1)';
-        this.style.background = '#FF3636';
-        floatingButton.style.transform = 'scale(1.05)';
-        floatingButton.style.boxShadow = '0 6px 24px rgba(46, 126, 238, 0.4)';
-    };
-
-    closeButton.onmouseout = function (e) {
-        e.stopPropagation();
-        this.style.transform = 'scale(1)';
-        this.style.background = '#FF5252';
-    };
-
-    // Hide the entire button container when close is clicked
-    closeButton.onclick = function (e) {
-        e.stopPropagation();
-        buttonContainer.style.display = 'none';
-    };
-
-    floatingButton.appendChild(closeButton);
 
     // Create menu items with Feather icons - check routes for disabled state
     const isLabsRoute = window.location.href.includes('/labs/');
@@ -194,7 +141,9 @@
     const langMenuItem = createMenuItem('Switch Language', '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>');
     const modeMenuItem = createMenuItem('Lab ⇌ Tutorial', '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>', !(isLabsRoute || isTutorialsRoute));
     const clearCacheMenuItem = createMenuItem('Clear Cache', '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>');
+    const quickStartMenuItem = createMenuItem('快速开始', '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>');
     const zenModeMenuItem = createMenuItem('Zen Mode', '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"></path></svg>', !isLabsRoute);
+    const closeMenuItem = createMenuItem('Close Helper', '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>');
 
     // Modern language submenu
     const langSubmenu = document.createElement('div');
@@ -336,11 +285,25 @@
         modeMenuItem.title = "Mode switch is only available on Lab or Tutorial pages";
     }
 
+    // Hide the entire button container when close menu item is clicked
+    closeMenuItem.onclick = function (e) {
+        e.stopPropagation();
+        buttonContainer.style.display = 'none';
+    };
+
+    // Quick Start functionality
+    quickStartMenuItem.onclick = function (e) {
+        e.stopPropagation();
+        window.open('https://labex.io/labs/linux-your-first-linux-lab-270253?hidelabby=true&hideheader=true', '_blank');
+    };
+
     // Update menu items addition
     menuContainer.appendChild(langMenuWrapper);
     menuContainer.appendChild(modeMenuItem);
+    menuContainer.appendChild(quickStartMenuItem);
     menuContainer.appendChild(zenModeMenuItem);
     menuContainer.appendChild(clearCacheMenuItem);
+    menuContainer.appendChild(closeMenuItem);
 
     // Add elements to container
     buttonContainer.appendChild(menuContainer);
