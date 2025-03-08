@@ -25,15 +25,3 @@ After installation, you'll see a blue circular button in the bottom-left corner 
 
 - Some features are context-sensitive and will only be available on certain pages
 - Hover over disabled options to see explanations
-
-## Version
-
-Current version: 1.7.1
-
-## Author
-
-Created by [huhuhang](https://github.com/huhuhang)
-
-## License
-
-This project is open source and available for personal use and modification.
