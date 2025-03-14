@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         LabEx Helper
 // @namespace    http://tampermonkey.net/
-// @version      1.7.2
+// @version      1.8
 // @description  Helper script for labex.io website
 // @author       huhuhang
 // @match        https://labex.io/*
@@ -144,6 +144,54 @@
     const quickStartMenuItem = createMenuItem('Quick Start', '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>');
     const zenModeMenuItem = createMenuItem('Zen Mode', '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"></path></svg>', !isLabsRoute);
     const closeMenuItem = createMenuItem('Close Helper', '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>');
+
+    // IBM Plex Mono Font Toggle functionality
+    let isPlexFontEnabled = localStorage.getItem('labex_use_plex_font') === 'true';
+    const plexFontMenuItem = createMenuItem(
+        isPlexFontEnabled ? 'Disable IBM Plex Mono' : 'Use IBM Plex Mono',
+        '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V4h16v3"></path><path d="M9 20h6"></path><path d="M12 4v16"></path></svg>'
+    );
+
+    // Function to apply IBM Plex Mono font
+    const applyPlexFont = () => {
+        const styleId = 'labex-plex-font-style';
+        
+        if (isPlexFontEnabled) {
+            // Create style element if it doesn't exist
+            if (!document.getElementById(styleId)) {
+                const styleElement = document.createElement('style');
+                styleElement.id = styleId;
+                styleElement.textContent = `
+                    * {
+                        font-family: 'IBM Plex Mono', monospace !important;
+                    }
+                `;
+                document.head.appendChild(styleElement);
+            }
+        } else {
+            // Remove style if it exists
+            const existingStyle = document.getElementById(styleId);
+            if (existingStyle) {
+                existingStyle.remove();
+            }
+        }
+    };
+
+    // Toggle IBM Plex Mono font
+    plexFontMenuItem.onclick = function (e) {
+        e.stopPropagation();
+        isPlexFontEnabled = !isPlexFontEnabled;
+        localStorage.setItem('labex_use_plex_font', isPlexFontEnabled);
+        
+        // Update menu item text
+        this.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V4h16v3"></path><path d="M9 20h6"></path><path d="M12 4v16"></path></svg> ${isPlexFontEnabled ? 'Disable IBM Plex Mono' : 'Use IBM Plex Mono'}`;
+        
+        // Apply or remove the font
+        applyPlexFont();
+    };
+
+    // Apply font on page load if enabled
+    applyPlexFont();
 
     // Modern language submenu
     const langSubmenu = document.createElement('div');
@@ -302,6 +350,7 @@
     menuContainer.appendChild(modeMenuItem);
     menuContainer.appendChild(quickStartMenuItem);
     menuContainer.appendChild(zenModeMenuItem);
+    menuContainer.appendChild(plexFontMenuItem);  // Add the IBM Plex Mono font toggle
     menuContainer.appendChild(clearCacheMenuItem);
     menuContainer.appendChild(closeMenuItem);
 
