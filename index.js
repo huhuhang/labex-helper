@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         LabEx Helper
 // @namespace    http://tampermonkey.net/
-// @version      1.8.2
+// @version      1.8.3
 // @description  Helper script for labex.io website
 // @author       huhuhang
 // @match        https://labex.io/*
@@ -37,14 +37,14 @@
         menuContainer.style.cssText = `
             display: none;
             flex-direction: column;
-            gap: 8px;
+            gap: 4px;
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
-            padding: 12px;
-            border-radius: 16px;
+            padding: 8px;
+            border-radius: 12px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-            margin-bottom: 16px;
-            min-width: 220px;
+            margin-bottom: 8px;
+            min-width: 160px;
             border: 1px solid rgba(0, 0, 0, 0.05);
             transform-origin: bottom left;
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
@@ -56,17 +56,17 @@
             item.innerHTML = `${icon} ${text}`;
 
             const baseStyles = `
-                padding: 10px 14px;
+                padding: 6px 10px;
                 background: transparent;
                 border: none;
-                border-radius: 12px;
+                border-radius: 8px;
                 cursor: ${isDisabled ? 'not-allowed' : 'pointer'};
-                font-size: 14px;
+                font-size: 12px;
                 font-weight: 500;
                 color: ${isDisabled ? '#9CA3AF' : '#374151'};
                 display: flex;
                 align-items: center;
-                gap: 10px;
+                gap: 6px;
                 width: 100%;
                 text-align: left;
                 transition: all 0.2s ease;
@@ -95,18 +95,18 @@
 
         // Modern floating button
         const floatingButton = document.createElement('button');
-        floatingButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="12" y1="16" x2="12" y2="16"></line></svg>`;
+        floatingButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="12" y1="16" x2="12" y2="16"></line></svg>`;
         floatingButton.style.cssText = `
-            width: 56px;
-            height: 56px;
-            border-radius: 28px;
+            width: 28px;
+            height: 28px;
+            border-radius: 14px;
             background: linear-gradient(135deg, #2E7EEE, #1E63C4);
             border: none;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 4px 20px rgba(46, 126, 238, 0.3);
+            box-shadow: 0 2px 10px rgba(46, 126, 238, 0.3);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             color: white;
             position: relative;
