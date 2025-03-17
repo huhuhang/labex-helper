@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         LabEx Helper
 // @namespace    http://tampermonkey.net/
-// @version      1.8.4
+// @version      1.8.5
 // @description  Helper script for labex.io website
 // @author       huhuhang
 // @match        https://labex.io/*
@@ -79,9 +79,9 @@
 
             if (!isDisabled) {
                 item.onmouseover = function () {
-                    this.style.backgroundColor = 'rgba(46, 126, 238, 0.08)';
+                    this.style.backgroundColor = 'rgba(75, 85, 99, 0.08)';
                     this.style.transform = 'translateX(4px)';
-                    this.style.color = '#2E7EEE';
+                    this.style.color = '#4B5563';
                 };
                 item.onmouseout = function () {
                     this.style.backgroundColor = 'transparent';
