@@ -135,12 +135,12 @@
         // Button hover effect
         floatingButton.onmouseover = function () {
             this.style.transform = 'scale(1.05)';
-            this.style.boxShadow = '0 6px 24px rgba(46, 126, 238, 0.4)';
+            this.style.boxShadow = '0 6px 24px rgba(75, 85, 99, 0.4)';
         };
 
         floatingButton.onmouseout = function () {
             this.style.transform = 'scale(1)';
-            this.style.boxShadow = '0 4px 20px rgba(46, 126, 238, 0.3)';
+            this.style.boxShadow = '0 4px 20px rgba(75, 85, 99, 0.3)';
         };
 
         // Create menu items with Feather icons - check routes for disabled state
