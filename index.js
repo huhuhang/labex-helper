@@ -100,13 +100,13 @@
             width: 28px;
             height: 28px;
             border-radius: 14px;
-            background: linear-gradient(135deg, #2E7EEE, #1E63C4);
+            background: linear-gradient(135deg, #4B5563, #374151);
             border: none;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 2px 10px rgba(46, 126, 238, 0.3);
+            box-shadow: 0 2px 10px rgba(75, 85, 99, 0.3);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             color: white;
             position: relative;
