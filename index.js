@@ -172,7 +172,7 @@
                     styleElement.id = styleId;
                     styleElement.textContent = `
                         * {
-                            font-family: 'IBM Plex Mono', monospace !important;
+                            font-family: 'Maple Mono NF CN','IBM Plex Mono', monospace !important;
                         }
                     `;
                     document.head.appendChild(styleElement);
