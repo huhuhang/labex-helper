@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         LabEx Helper
 // @namespace    http://tampermonkey.net/
-// @version      1.8.6
+// @version      1.8.7
 // @description  Helper script for labex.io website
 // @author       huhuhang
 // @match        https://labex.io/*
@@ -112,12 +112,69 @@
             position: relative;
         `;
 
+        // 添加拖动功能
+        let isDragging = false;
+        let offsetX, offsetY;
+
+        // 处理鼠标按下事件，开始拖动
+        buttonContainer.addEventListener('mousedown', function (e) {
+            // 只在点击悬浮球而不是菜单时启用拖动
+            if (!menuContainer.contains(e.target)) {
+                isDragging = true;
+                // 记录鼠标与按钮容器左上角的相对位置
+                offsetX = e.clientX - buttonContainer.getBoundingClientRect().left;
+                offsetY = e.clientY - buttonContainer.getBoundingClientRect().top;
+
+                // 更改光标样式
+                buttonContainer.style.cursor = 'grabbing';
+
+                // 防止拖动时触发按钮点击
+                e.preventDefault();
+            }
+        });
+
+        // 处理鼠标移动事件，实现拖动
+        document.addEventListener('mousemove', function (e) {
+            if (isDragging) {
+                // 计算新位置
+                let newLeft = e.clientX - offsetX;
+                let newTop = e.clientY - offsetY;
+
+                // 限制不超出视口
+                newLeft = Math.max(10, Math.min(window.innerWidth - buttonContainer.offsetWidth - 10, newLeft));
+                newTop = Math.max(10, Math.min(window.innerHeight - buttonContainer.offsetHeight - 10, newTop));
+
+                // 更新位置
+                buttonContainer.style.left = newLeft + 'px';
+                buttonContainer.style.bottom = (window.innerHeight - newTop - buttonContainer.offsetHeight) + 'px';
+            }
+        });
+
+        // 处理鼠标释放事件，停止拖动
+        document.addEventListener('mouseup', function () {
+            if (isDragging) {
+                isDragging = false;
+                buttonContainer.style.cursor = 'default';
+            }
+        });
+
+        // 鼠标离开窗口时停止拖动
+        document.addEventListener('mouseleave', function () {
+            if (isDragging) {
+                isDragging = false;
+                buttonContainer.style.cursor = 'default';
+            }
+        });
+
         // Toggle menu visibility
         let isMenuVisible = false;
         floatingButton.onclick = function (e) {
-            e.stopPropagation();
-            isMenuVisible = !isMenuVisible;
-            menuContainer.style.display = isMenuVisible ? 'flex' : 'none';
+            // 只有在非拖动状态下才触发菜单显示/隐藏
+            if (!isDragging) {
+                e.stopPropagation();
+                isMenuVisible = !isMenuVisible;
+                menuContainer.style.display = isMenuVisible ? 'flex' : 'none';
+            }
         };
 
         // Close menu when clicking outside
