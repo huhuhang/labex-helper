@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         LabEx Helper
 // @namespace    http://tampermonkey.net/
-// @version      1.8.8
+// @version      1.8.9
 // @description  Helper script for labex.io website
 // @author       huhuhang
 // @match        https://labex.io/*
@@ -53,307 +53,371 @@
 
         labDataContainer.innerHTML = '<div class="loading-stats"><span class="pulse-dot"></span> Loading stats...</div>';
 
-        try {
-            GM_xmlhttpRequest({
-                method: "GET",
-                url: apiUrl,
-                onload: function (response) {
-                    labDataContainer.style.opacity = '1';
-                    labDataContainer.style.transform = 'translateY(0)';
+        // Delay fetching data until after page load is complete
+        // Use requestIdleCallback for browsers that support it, otherwise use setTimeout
+        const fetchData = () => {
+            try {
+                GM_xmlhttpRequest({
+                    method: "GET",
+                    url: apiUrl,
+                    onload: function (response) {
+                        labDataContainer.style.opacity = '1';
+                        labDataContainer.style.transform = 'translateY(0)';
 
-                    if (response.status >= 200 && response.status < 300) {
-                        const data = JSON.parse(response.responseText);
-                        const learned = data.ALL_LEARNED || 0;
-                        const passed = data.ALL_PASSED || 0;
-                        const githubLink = data.GITHUB?.link;
-                        const githubText = data.GITHUB?.text || 'GitHub';
-                        const feeType = data.FEE_TYPE || 'N/A';
-                        const positiveReviews = data.POSITIVE_REVIEW || 0;
-                        const neutralReviews = data.NEUTRAL_REVIEW || 0;
-                        const negativeReviews = data.NEGATIVE_REVIEW || 0;
-                        const isVerified = data.VERIFIED === true;
-                        const isOpenNetwork = data.OPEN_NETWORK === true;
+                        if (response.status >= 200 && response.status < 300) {
+                            const data = JSON.parse(response.responseText);
+                            const learned = data.ALL_LEARNED || 0;
+                            const passed = data.ALL_PASSED || 0;
+                            const githubLink = data.GITHUB?.link;
+                            const githubText = data.GITHUB?.text || 'GitHub';
+                            const feeType = data.FEE_TYPE || 'N/A';
+                            const positiveReviews = data.POSITIVE_REVIEW || 0;
+                            const neutralReviews = data.NEUTRAL_REVIEW || 0;
+                            const negativeReviews = data.NEGATIVE_REVIEW || 0;
+                            const isVerified = data.VERIFIED === true;
+                            const isOpenNetwork = data.OPEN_NETWORK === true;
 
-                        const totalReviews = positiveReviews + neutralReviews + negativeReviews;
-                        const passRate = learned > 0 ? ((passed / learned) * 100).toFixed(1) : '0.0';
-                        const positiveRate = totalReviews > 0 ? ((positiveReviews / totalReviews) * 100).toFixed(1) : '0.0';
-                        const negativeRate = totalReviews > 0 ? ((negativeReviews / totalReviews) * 100).toFixed(1) : '0.0';
+                            const totalReviews = positiveReviews + neutralReviews + negativeReviews;
+                            const passRate = learned > 0 ? ((passed / learned) * 100).toFixed(1) : '0.0';
+                            const positiveRate = totalReviews > 0 ? ((positiveReviews / totalReviews) * 100).toFixed(1) : '0.0';
+                            const negativeRate = totalReviews > 0 ? ((negativeReviews / totalReviews) * 100).toFixed(1) : '0.0';
+                            // 计算综合好评率（正面 + 中立）和差评率
+                            const combinedPositiveReviews = positiveReviews + neutralReviews;
+                            const combinedPositiveRate = totalReviews > 0 ? ((combinedPositiveReviews / totalReviews) * 100).toFixed(1) : '0.0';
+                            const dislikeRate = totalReviews > 0 ? ((negativeReviews / totalReviews) * 100).toFixed(1) : '0.0';
 
-                        // Build HTML structure for compact floating display
-                        // Inject CSS for styling the stats
-                        const styleSheet = document.createElement('style');
-                        styleSheet.textContent = `
-                            .labex-stats-container {
-                                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-                            }
-                            .labex-stats-container strong { 
-                                font-weight: 600; 
-                                color: #1f2937; 
-                            }
-                            .labex-stats-container .title {
-                                font-size: 13px;
-                                font-weight: 600;
-                                color: #1f2937;
-                                margin-bottom: 6px;
-                                display: flex;
-                                align-items: center;
-                                gap: 5px;
-                                padding: 2px 0;
-                            }
-                            .stats-row {
-                                display: flex;
-                                width: 100%;
-                                justify-content: space-between;
-                                margin-bottom: 8px;
-                                padding: 5px;
-                                border-radius: 8px;
-                            }
-                            .stats-row:nth-of-type(1) {
-                                background-color: rgba(239, 246, 255, 0.6); /* 浅蓝色背景 */
-                            }
-                            .stats-row:nth-of-type(2) {
-                                background-color: rgba(236, 253, 245, 0.6); /* 浅绿色背景 */
-                            }
-                            .badge-row {
-                                background-color: rgba(254, 243, 199, 0.3); /* 浅黄色背景 */
-                                border-radius: 8px;
-                                padding: 5px;
-                            }
-                            .stat-item {
-                                flex: 1;
-                                display: flex;
-                                flex-direction: column;
-                                align-items: center;
-                                justify-content: center;
-                                background: rgba(255, 255, 255, 0.7);
-                                padding: 6px 4px;
-                                border-radius: 6px;
-                                min-width: 0;
-                                transition: all 0.2s ease;
-                                text-align: center;
-                                margin: 0 3px;
-                            }
-                            .stat-item:first-child {
-                                margin-left: 0;
-                            }
-                            .stat-item:last-child {
-                                margin-right: 0;
-                            }
-                            .stat-item:hover {
-                                background: rgba(243, 244, 246, 0.9);
-                                transform: translateY(-2px);
-                            }
-                            .stat-item .value {
-                                font-weight: 600;
-                                color: #1f2937;
-                                font-size: 13px;
-                                text-align: center;
-                                width: 100%;
-                                white-space: nowrap;
-                                overflow: hidden;
-                                text-overflow: ellipsis;
-                            }
-                            .stat-item .label {
-                                font-size: 10px;
-                                color: #6b7280;
-                                margin-top: 2px;
-                                text-align: center;
-                                width: 100%;
-                                white-space: nowrap;
-                                overflow: hidden;
-                                text-overflow: ellipsis;
-                            }
-                            .divider {
-                                height: 1px;
-                                background: rgba(229, 231, 235, 0.5);
-                                margin: 6px 0;
-                                width: 100%;
-                            }
-                            .badge {
-                                flex: 1;
-                                display: inline-flex;
-                                align-items: center;
-                                justify-content: center;
-                                gap: 4px;
-                                padding: 5px 3px;
-                                border-radius: 6px;
-                                font-size: 10px;
-                                font-weight: 500;
-                                cursor: help;
-                                transition: all 0.2s ease;
-                                margin: 0 3px;
-                                text-align: center;
-                                background: rgba(255, 255, 255, 0.7);
-                            }
-                            .badge:first-child {
-                                margin-left: 0;
-                            }
-                            .badge:last-child {
-                                margin-right: 0;
-                            }
-                            .badge:hover {
-                                transform: translateY(-1px);
-                                box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-                            }
-                            .badge.verified { background-color: #e0f2fe; color: #0c4a6e; }
-                            .badge.fee { background-color: #f3f4f6; color: #4b5563; }
-                            .badge.network { background-color: #fef3c7; color: #713f12; }
-                            .badge.network.disabled { background-color: #f3f4f6; color: #6b7280; }
-                            .badge.github {
-                                background-color: #eff6ff;
-                                color: #3b82f6;
-                                text-decoration: none;
-                                cursor: pointer;
-                            }
-                            .badge.github svg {
-                                width: 11px; height: 11px;
-                            }
-                            .loading-stats {
-                                display: flex;
-                                align-items: center;
-                                gap: 8px;
-                                font-size: 12px;
-                                color: #6b7280;
-                            }
-                            .pulse-dot {
-                                width: 8px;
-                                height: 8px;
-                                background-color: #3b82f6;
-                                border-radius: 50%;
-                                animation: pulse 1.5s infinite;
-                            }
-                            @keyframes pulse {
-                                0% {
-                                    transform: scale(0.8);
-                                    opacity: 0.5;
+                            // Build HTML structure for compact floating display
+                            // Inject CSS for styling the stats
+                            const styleSheet = document.createElement('style');
+                            styleSheet.textContent = `
+                                .labex-stats-container {
+                                    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
                                 }
-                                50% {
-                                    transform: scale(1.1);
-                                    opacity: 1;
+                                .labex-stats-container strong { 
+                                    font-weight: 600; 
+                                    color: #1f2937; 
                                 }
-                                100% {
-                                    transform: scale(0.8);
-                                    opacity: 0.5;
+                                .labex-stats-container .title {
+                                    font-size: 13px;
+                                    font-weight: 600;
+                                    color: #1f2937;
+                                    margin-bottom: 6px;
+                                    display: flex;
+                                    align-items: center;
+                                    gap: 5px;
+                                    padding: 2px 0;
                                 }
+                                .stats-row {
+                                    display: flex;
+                                    width: 100%;
+                                    justify-content: space-between;
+                                    margin-bottom: 8px;
+                                    padding: 5px;
+                                    border-radius: 8px;
+                                }
+                                .stats-row:nth-of-type(1) {
+                                }
+                                .stats-row:nth-of-type(2) {
+                                }
+                                .badge-row {
+                                    background-color: rgba(254, 243, 199, 0.3); /* 浅黄色背景 */
+                                    border-radius: 8px;
+                                    padding: 5px;
+                                    display: flex;
+                                    justify-content: space-between;
+                                    align-items: stretch;
+                                    width: 100%;
+                                    gap: 6px;
+                                }
+                                .stat-item {
+                                    flex: 1;
+                                    display: flex;
+                                    flex-direction: column;
+                                    align-items: center;
+                                    justify-content: center;
+                                    background: rgba(255, 255, 255, 0.7);
+                                    padding: 6px 4px;
+                                    border-radius: 6px;
+                                    min-width: 0;
+                                    transition: all 0.2s ease;
+                                    text-align: center;
+                                    margin: 0 3px;
+                                }
+                                .stat-item:first-child {
+                                    margin-left: 0;
+                                }
+                                .stat-item:last-child {
+                                    margin-right: 0;
+                                }
+                                .stat-item:hover {
+                                    background: rgba(243, 244, 246, 0.9);
+                                    transform: translateY(-2px);
+                                }
+                                .stat-item.positive-rate {
+                                    background-color: rgba(134, 239, 172, 0.7); /* 浅绿色背景 */
+                                    color: #065f46;
+                                }
+                                .stat-item.positive-rate:hover {
+                                    background-color: rgba(134, 239, 172, 0.85);
+                                }
+                                .stat-item.negative-rate {
+                                    background-color: rgba(252, 165, 165, 0.7); /* 浅红色背景 */
+                                    color: #991b1b;
+                                }
+                                .stat-item.negative-rate:hover {
+                                    background-color: rgba(252, 165, 165, 0.85);
+                                }
+                                .stat-item .value {
+                                    font-weight: 600;
+                                    color: #1f2937;
+                                    font-size: 13px;
+                                    text-align: center;
+                                    width: 100%;
+                                    white-space: nowrap;
+                                    overflow: hidden;
+                                    text-overflow: ellipsis;
+                                }
+                                .stat-item .label {
+                                    font-size: 10px;
+                                    color: #6b7280;
+                                    margin-top: 2px;
+                                    text-align: center;
+                                    width: 100%;
+                                    white-space: nowrap;
+                                    overflow: hidden;
+                                    text-overflow: ellipsis;
+                                }
+                                .divider {
+                                    height: 1px;
+                                    background: rgba(229, 231, 235, 0.5);
+                                    margin: 6px 0;
+                                    width: 100%;
+                                }
+                                .badge {
+                                    flex: 1 1 0;
+                                    display: inline-flex;
+                                    align-items: center;
+                                    justify-content: center;
+                                    gap: 4px;
+                                    padding: 5px 3px;
+                                    border-radius: 6px;
+                                    font-size: 10px;
+                                    font-weight: 500;
+                                    cursor: help;
+                                    transition: all 0.2s ease;
+                                    margin: 0;
+                                    text-align: center;
+                                    background: rgba(255, 255, 255, 0.7);
+                                    min-width: 0;
+                                    overflow: hidden;
+                                    text-overflow: ellipsis;
+                                    white-space: nowrap;
+                                }
+                                .badge:first-child {
+                                    margin-left: 0;
+                                }
+                                .badge:last-child {
+                                    margin-right: 0;
+                                }
+                                .badge:hover {
+                                    transform: translateY(-1px);
+                                    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+                                }
+                                .badge.verified { 
+                                    background-color: rgba(134, 239, 172, 0.7); /* 浅绿色背景 */
+                                    color: #065f46; 
+                                }
+                                .badge.unverified { 
+                                    background-color: rgba(252, 165, 165, 0.7); /* 浅红色背景 */
+                                    color: #991b1b; 
+                                }
+                                .badge.fee { background-color: #f3f4f6; color: #4b5563; }
+                                .badge.network-open { 
+                                    background-color: rgba(252, 165, 165, 0.7); /* 浅红色背景 */ 
+                                    color: #991b1b;
+                                }
+                                .badge.network-closed { 
+                                    background-color: rgba(134, 239, 172, 0.7); /* 浅绿色背景 */
+                                    color: #065f46;
+                                }
+                                .badge.github {
+                                    background-color: transparent;
+                                    color: #3b82f6;
+                                    text-decoration: none;
+                                    cursor: pointer;
+                                    border: 1px solid #dbeafe;
+                                }
+                                .badge.github svg {
+                                    width: 11px; height: 11px;
+                                }
+                                .loading-stats {
+                                    display: flex;
+                                    align-items: center;
+                                    gap: 8px;
+                                    font-size: 12px;
+                                    color: #6b7280;
+                                }
+                                .pulse-dot {
+                                    width: 8px;
+                                    height: 8px;
+                                    background-color: #3b82f6;
+                                    border-radius: 50%;
+                                    animation: pulse 1.5s infinite;
+                                }
+                                @keyframes pulse {
+                                    0% {
+                                        transform: scale(0.8);
+                                        opacity: 0.5;
+                                    }
+                                    50% {
+                                        transform: scale(1.1);
+                                        opacity: 1;
+                                    }
+                                    100% {
+                                        transform: scale(0.8);
+                                        opacity: 0.5;
+                                    }
+                                }
+                            `;
+
+                            labDataContainer.innerHTML = ``; // Clear previous content
+                            labDataContainer.appendChild(styleSheet);
+
+                            const contentWrapper = document.createElement('div');
+                            contentWrapper.innerHTML = `
+                                <div class="title">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                                    </svg>
+                                    Lab Statistics
+                                </div>
+                                
+                                <!-- 第一排：学习人数、通过人数、通过率 -->
+                                <div class="stats-row">
+                                    <div class="stat-item" title="Total Learners">
+                                        <div class="value">${learned.toLocaleString()}</div>
+                                        <div class="label">Learners</div>
+                                    </div>
+                                    <div class="stat-item" title="Students Passed">
+                                        <div class="value">${passed.toLocaleString()}</div>
+                                        <div class="label">Passed</div>
+                                    </div>
+                                    <div class="stat-item" title="Success Rate">
+                                        <div class="value">${passRate}%</div>
+                                        <div class="label">Pass Rate</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="divider"></div>
+                                
+                                <!-- 第二排：好评、中立评价、差评 -->
+                                <div class="stats-row">
+                                    <div class="stat-item" title="Positive Reviews (${positiveRate}%)">
+                                        <div class="value">${positiveReviews.toLocaleString()}</div>
+                                        <div class="label">👍 Likes</div>
+                                    </div>
+                                    <div class="stat-item" title="Neutral Reviews">
+                                        <div class="value">${neutralReviews.toLocaleString()}</div>
+                                        <div class="label">😐 Neutral</div>
+                                    </div>
+                                    <div class="stat-item" title="Negative Reviews (${negativeRate}%)">
+                                        <div class="value">${negativeReviews.toLocaleString()}</div>
+                                        <div class="label">👎 Dislikes</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="divider"></div>
+                                
+                                <!-- 新增：综合好评率和差评率 -->
+                                <div class="stats-row">
+                                    <div class="stat-item positive-rate" title="Combined Positive Rate (Likes + Neutral)">
+                                        <div class="value">${combinedPositiveRate}%</div>
+                                        <div class="label">😊 好评率</div>
+                                    </div>
+                                    <div class="stat-item negative-rate" title="Dislike Rate">
+                                        <div class="value">${dislikeRate}%</div>
+                                        <div class="label">😟 差评率</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="divider"></div>
+                                
+                                <!-- 第三排：验证状态、网络需求、GitHub 链接 -->
+                                <div class="badge-row">
+                                    <span class="badge ${isVerified ? 'verified' : 'unverified'}" title="${isVerified ? 'Verified Lab' : 'Not Verified'}">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                                        </svg>
+                                        ${isVerified ? 'Verified' : 'Not Verified'}
+                                    </span>
+                                    <span class="badge ${isOpenNetwork ? 'network-open' : 'network-closed'}" title="${isOpenNetwork ? 'Open Network Required' : 'No Open Network Required'}">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                            <circle cx="12" cy="12" r="10"></circle>
+                                            <line x1="2" y1="12" x2="22" y2="12"></line>
+                                            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                                        </svg>
+                                        ${isOpenNetwork ? 'OpenNet' : 'No OpenNet'}
+                                    </span>
+                                    ${githubLink ? `
+                                    <a class="badge github" href="${githubLink}" target="_blank" title="${githubText}">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+                                        </svg>
+                                        GitHub
+                                    </a>` : `
+                                    <span class="badge fee">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                            <circle cx="12" cy="12" r="10"></circle>
+                                            <line x1="12" y1="8" x2="12" y2="12"></line>
+                                            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                                        </svg>
+                                        ${feeType}
+                                    </span>`}
+                                </div>
+                            `;
+                            labDataContainer.appendChild(contentWrapper);
+
+                            // Add hover effects for Github link
+                            const githubAnchor = labDataContainer.querySelector('a.github');
+                            if (githubAnchor) {
+                                githubAnchor.onmouseover = () => {
+                                    githubAnchor.style.backgroundColor = '#dbeafe';
+                                    githubAnchor.style.transform = 'translateY(-2px)';
+                                    githubAnchor.style.boxShadow = '0 2px 5px rgba(59, 130, 246, 0.2)';
+                                };
+                                githubAnchor.onmouseout = () => {
+                                    githubAnchor.style.backgroundColor = '#eff6ff';
+                                    githubAnchor.style.transform = 'translateY(-1px)';
+                                    githubAnchor.style.boxShadow = '0 2px 5px rgba(0, 0, 0, 0.05)';
+                                };
                             }
-                        `;
-
-                        labDataContainer.innerHTML = ``; // Clear previous content
-                        labDataContainer.appendChild(styleSheet);
-
-                        const contentWrapper = document.createElement('div');
-                        contentWrapper.innerHTML = `
-                            <div class="title">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
-                                </svg>
-                                Lab Statistics
-                            </div>
-                            
-                            <!-- 第一排：学习人数、通过人数、通过率 -->
-                            <div class="stats-row">
-                                <div class="stat-item" title="Total Learners">
-                                    <div class="value">${learned.toLocaleString()}</div>
-                                    <div class="label">Learners</div>
-                                </div>
-                                <div class="stat-item" title="Students Passed">
-                                    <div class="value">${passed.toLocaleString()}</div>
-                                    <div class="label">Passed</div>
-                                </div>
-                                <div class="stat-item" title="Success Rate">
-                                    <div class="value">${passRate}%</div>
-                                    <div class="label">Pass Rate</div>
-                                </div>
-                            </div>
-                            
-                            <div class="divider"></div>
-                            
-                            <!-- 第二排：好评、中立评价、差评 -->
-                            <div class="stats-row">
-                                <div class="stat-item" title="Positive Reviews (${positiveRate}%)">
-                                    <div class="value">${positiveReviews.toLocaleString()}</div>
-                                    <div class="label">👍 Likes</div>
-                                </div>
-                                <div class="stat-item" title="Neutral Reviews">
-                                    <div class="value">${neutralReviews.toLocaleString()}</div>
-                                    <div class="label">😐 Neutral</div>
-                                </div>
-                                <div class="stat-item" title="Negative Reviews (${negativeRate}%)">
-                                    <div class="value">${negativeReviews.toLocaleString()}</div>
-                                    <div class="label">👎 Dislikes</div>
-                                </div>
-                            </div>
-                            
-                            <div class="divider"></div>
-                            
-                            <!-- 第三排：验证状态、网络需求、GitHub 链接 -->
-                            <div class="badge-row">
-                                <span class="badge verified" title="${isVerified ? 'Verified Lab' : 'Not Verified'}">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
-                                    </svg>
-                                    ${isVerified ? 'Verified' : 'Not Verified'}
-                                </span>
-                                <span class="badge network ${!isOpenNetwork ? 'disabled' : ''}" title="${isOpenNetwork ? 'Open Network Required' : 'No Open Network Required'}">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                        <circle cx="12" cy="12" r="10"></circle>
-                                        <line x1="2" y1="12" x2="22" y2="12"></line>
-                                        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
-                                    </svg>
-                                    ${isOpenNetwork ? 'OpenNet' : 'No OpenNet'}
-                                </span>
-                                ${githubLink ? `
-                                <a class="badge github" href="${githubLink}" target="_blank" title="${githubText}">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
-                                    </svg>
-                                    GitHub
-                                </a>` : `
-                                <span class="badge fee">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                        <circle cx="12" cy="12" r="10"></circle>
-                                        <line x1="12" y1="8" x2="12" y2="12"></line>
-                                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                                    </svg>
-                                    ${feeType}
-                                </span>`}
-                            </div>
-                        `;
-                        labDataContainer.appendChild(contentWrapper);
-
-                        // Add hover effects for Github link
-                        const githubAnchor = labDataContainer.querySelector('a.github');
-                        if (githubAnchor) {
-                            githubAnchor.onmouseover = () => {
-                                githubAnchor.style.backgroundColor = '#dbeafe';
-                                githubAnchor.style.transform = 'translateY(-2px)';
-                                githubAnchor.style.boxShadow = '0 2px 5px rgba(59, 130, 246, 0.2)';
-                            };
-                            githubAnchor.onmouseout = () => {
-                                githubAnchor.style.backgroundColor = '#eff6ff';
-                                githubAnchor.style.transform = 'translateY(-1px)';
-                                githubAnchor.style.boxShadow = '0 2px 5px rgba(0, 0, 0, 0.05)';
-                            };
+                        } else {
+                            console.error('Failed to fetch lab data:', response.statusText);
+                            labDataContainer.innerHTML = `<div class="loading-stats" style="color: #ef4444;"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg> Failed to load stats</div>`;
                         }
-                    } else {
-                        console.error('Failed to fetch lab data:', response.statusText);
+                    },
+                    onerror: function (error) {
+                        console.error('Error fetching lab data:', error);
+                        labDataContainer.style.opacity = '1';
+                        labDataContainer.style.transform = 'translateY(0)';
                         labDataContainer.innerHTML = `<div class="loading-stats" style="color: #ef4444;"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg> Failed to load stats</div>`;
                     }
-                },
-                onerror: function (error) {
-                    console.error('Error fetching lab data:', error);
-                    labDataContainer.style.opacity = '1';
-                    labDataContainer.style.transform = 'translateY(0)';
-                    labDataContainer.innerHTML = `<div class="loading-stats" style="color: #ef4444;"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg> Failed to load stats</div>`;
-                }
-            });
+                });
+            } catch (error) {
+                console.error('Error fetching or processing lab data:', error);
+                labDataContainer.style.opacity = '1'; // Ensure visibility on error
+                labDataContainer.style.transform = 'translateY(0)';
+                labDataContainer.innerHTML = `<div class="loading-stats" style="color: #ef4444;"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg> Failed to load stats</div>`;
+            }
+        };
 
-        } catch (error) {
-            console.error('Error fetching or processing lab data:', error);
-            labDataContainer.style.opacity = '1'; // Ensure visibility on error
-            labDataContainer.style.transform = 'translateY(0)';
-            labDataContainer.innerHTML = `<div class="loading-stats" style="color: #ef4444;"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg> Failed to load stats</div>`;
+        // Use requestIdleCallback if available, otherwise fall back to setTimeout
+        if (window.requestIdleCallback) {
+            window.requestIdleCallback(fetchData, { timeout: 2000 });
+        } else {
+            // Delay fetch by 1 second to ensure page has loaded
+            setTimeout(fetchData, 1000);
         }
     }
 
