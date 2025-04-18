@@ -47,6 +47,7 @@
             transition: opacity 0.3s ease, transform 0.3s ease;
             border: 1px solid rgba(0, 0, 0, 0.05);
             z-index: 9998;
+            pointer-events: none;
         `;
 
         buttonContainer.appendChild(labDataContainer);
@@ -584,6 +585,7 @@
                 e.stopPropagation();
                 isMenuVisible = !isMenuVisible;
                 menuContainer.style.display = isMenuVisible ? 'flex' : 'none';
+                menuContainer.style.zIndex = '9999'; // 确保菜单在最上层
                 const labDataContainer = buttonContainer.querySelector('.labex-stats-container');
                 if (labDataContainer) {
                     labDataContainer.style.opacity = isMenuVisible ? '0' : '1';
@@ -654,6 +656,7 @@
             if (labDataContainer) {
                 if (isStatsCardVisible) {
                     labDataContainer.style.display = 'flex';
+                    labDataContainer.style.pointerEvents = 'none'; // 确保统计卡片不阻挡点击
                     setTimeout(() => {
                         labDataContainer.style.opacity = '1';
                         labDataContainer.style.transform = 'translateY(0)';
@@ -899,6 +902,14 @@
         if (labMatch && labMatch[1] && isStatsCardVisible) {
             const labAlias = labMatch[1];
             fetchAndDisplayLabData(labAlias, buttonContainer);
+
+            // 确保统计卡片不会阻挡点击
+            setTimeout(() => {
+                const labDataContainer = buttonContainer.querySelector('.labex-stats-container');
+                if (labDataContainer) {
+                    labDataContainer.style.pointerEvents = 'none';
+                }
+            }, 1500);
         }
         // --- End Lab Data Fetching Logic ---
     }
