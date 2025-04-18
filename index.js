@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         LabEx Helper
 // @namespace    http://tampermonkey.net/
-// @version      1.8.9
+// @version      1.9.0
 // @description  Helper script for labex.io website
 // @author       huhuhang
 // @match        https://labex.io/*
@@ -47,7 +47,7 @@
             transition: opacity 0.3s ease, transform 0.3s ease;
             border: 1px solid rgba(0, 0, 0, 0.05);
             z-index: 9998;
-            pointer-events: none;
+            pointer-events: auto;
         `;
 
         buttonContainer.appendChild(labDataContainer);
@@ -290,22 +290,22 @@
                                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                         <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
                                     </svg>
-                                    Lab Statistics
+                                    Lab 详情
                                 </div>
                                 
                                 <!-- 第一排：学习人数、通过人数、通过率 -->
                                 <div class="stats-row">
                                     <div class="stat-item" title="Total Learners">
                                         <div class="value">${learned.toLocaleString()}</div>
-                                        <div class="label">Learners</div>
+                                        <div class="label">学习人数</div>
                                     </div>
                                     <div class="stat-item" title="Students Passed">
                                         <div class="value">${passed.toLocaleString()}</div>
-                                        <div class="label">Passed</div>
+                                        <div class="label">通过人数</div>
                                     </div>
                                     <div class="stat-item" title="Success Rate">
                                         <div class="value">${passRate}%</div>
-                                        <div class="label">Pass Rate</div>
+                                        <div class="label">通过率</div>
                                     </div>
                                 </div>
                                 
@@ -315,15 +315,15 @@
                                 <div class="stats-row">
                                     <div class="stat-item" title="Positive Reviews (${positiveRate}%)">
                                         <div class="value">${positiveReviews.toLocaleString()}</div>
-                                        <div class="label">👍 Likes</div>
+                                        <div class="label">👍 好评</div>
                                     </div>
                                     <div class="stat-item" title="Neutral Reviews">
                                         <div class="value">${neutralReviews.toLocaleString()}</div>
-                                        <div class="label">😐 Neutral</div>
+                                        <div class="label">😐 中立</div>
                                     </div>
                                     <div class="stat-item" title="Negative Reviews (${negativeRate}%)">
                                         <div class="value">${negativeReviews.toLocaleString()}</div>
-                                        <div class="label">👎 Dislikes</div>
+                                        <div class="label">👎 差评</div>
                                     </div>
                                 </div>
                                 
@@ -350,7 +350,7 @@
                                             <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
                                             <polyline points="22 4 12 14.01 9 11.01"></polyline>
                                         </svg>
-                                        ${isVerified ? 'Verified' : 'Not Verified'}
+                                        ${isVerified ? '已验证' : '未验证'}
                                     </span>
                                     <span class="badge ${isOpenNetwork ? 'network-open' : 'network-closed'}" title="${isOpenNetwork ? 'Open Network Required' : 'No Open Network Required'}">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -358,7 +358,7 @@
                                             <line x1="2" y1="12" x2="22" y2="12"></line>
                                             <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
                                         </svg>
-                                        ${isOpenNetwork ? 'OpenNet' : 'No OpenNet'}
+                                        ${isOpenNetwork ? '开放网络' : '关闭网络'}
                                     </span>
                                     ${githubLink ? `
                                     <a class="badge github" href="${githubLink}" target="_blank" title="${githubText}">
@@ -588,8 +588,15 @@
                 menuContainer.style.zIndex = '9999'; // 确保菜单在最上层
                 const labDataContainer = buttonContainer.querySelector('.labex-stats-container');
                 if (labDataContainer) {
-                    labDataContainer.style.opacity = isMenuVisible ? '0' : '1';
-                    labDataContainer.style.transform = isMenuVisible ? 'translateY(10px)' : 'translateY(0)';
+                    if (isMenuVisible) {
+                        labDataContainer.style.opacity = '0';
+                        labDataContainer.style.transform = 'translateY(10px)';
+                        labDataContainer.style.pointerEvents = 'none';
+                    } else {
+                        labDataContainer.style.opacity = '1';
+                        labDataContainer.style.transform = 'translateY(0)';
+                        labDataContainer.style.pointerEvents = 'auto';
+                    }
                 }
             }
         };
@@ -656,7 +663,7 @@
             if (labDataContainer) {
                 if (isStatsCardVisible) {
                     labDataContainer.style.display = 'flex';
-                    labDataContainer.style.pointerEvents = 'none'; // 确保统计卡片不阻挡点击
+                    labDataContainer.style.pointerEvents = 'auto'; // 允许统计卡片接收点击事件
                     setTimeout(() => {
                         labDataContainer.style.opacity = '1';
                         labDataContainer.style.transform = 'translateY(0)';
@@ -664,6 +671,7 @@
                 } else {
                     labDataContainer.style.opacity = '0';
                     labDataContainer.style.transform = 'translateY(10px)';
+                    labDataContainer.style.pointerEvents = 'none';
                     setTimeout(() => {
                         labDataContainer.style.display = 'none';
                     }, 300); // 等待过渡动画完成
@@ -677,6 +685,10 @@
                     fetchAndDisplayLabData(labAlias, buttonContainer);
                 }
             }
+            
+            // 关闭菜单
+            isMenuVisible = false;
+            menuContainer.style.display = 'none';
         };
 
         // IBM Plex Mono Font Toggle functionality
@@ -902,12 +914,23 @@
         if (labMatch && labMatch[1] && isStatsCardVisible) {
             const labAlias = labMatch[1];
             fetchAndDisplayLabData(labAlias, buttonContainer);
-
-            // 确保统计卡片不会阻挡点击
+            
+            // 确保统计卡片上的链接可点击
             setTimeout(() => {
                 const labDataContainer = buttonContainer.querySelector('.labex-stats-container');
                 if (labDataContainer) {
-                    labDataContainer.style.pointerEvents = 'none';
+                    labDataContainer.style.pointerEvents = 'auto';
+                    
+                    // 处理菜单和卡片的显示优先级
+                    document.addEventListener('click', function(e) {
+                        // 当点击菜单按钮且菜单打开时，暂时禁用卡片的点击事件
+                        if (isMenuVisible && !menuContainer.contains(e.target)) {
+                            const statsCard = buttonContainer.querySelector('.labex-stats-container');
+                            if (statsCard) {
+                                statsCard.style.pointerEvents = 'none';
+                            }
+                        }
+                    });
                 }
             }, 1500);
         }
