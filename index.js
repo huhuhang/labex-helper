@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         LabEx Helper
 // @namespace    http://tampermonkey.net/
-// @version      1.9.0
+// @version      1.9.1
 // @description  Helper script for labex.io website
 // @author       huhuhang
 // @match        https://labex.io/*
@@ -30,11 +30,11 @@
             position: absolute;
             bottom: 40px;
             left: 0;
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(255, 255, 255, 0.98);
             backdrop-filter: blur(10px);
             padding: 10px 12px;
             border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
             font-size: 12px;
             color: #374151;
             display: flex;
@@ -42,17 +42,221 @@
             gap: 6px;
             min-width: 250px;
             width: 280px;
-            opacity: 0;
-            transform: translateY(10px);
-            transition: opacity 0.3s ease, transform 0.3s ease;
-            border: 1px solid rgba(0, 0, 0, 0.05);
+            opacity: 1;
+            transform: translateY(0);
+            transition: opacity 0.4s ease, transform 0.4s ease;
+            border: 1px solid rgba(0, 0, 0, 0.1);
             z-index: 9998;
             pointer-events: auto;
         `;
 
         buttonContainer.appendChild(labDataContainer);
 
-        labDataContainer.innerHTML = '<div class="loading-stats"><span class="pulse-dot"></span> Loading stats...</div>';
+        // 创建加载动画 - 确保显眼易见
+        labDataContainer.innerHTML = `
+        <div class="loading-container">
+            <div class="loading-header">
+                <div class="loading-title">
+                    <div class="pulse-ring"></div>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                    </svg>
+                    Lab 详情加载中...
+                </div>
+            </div>
+            <div class="loading-skeleton">
+                <div class="skeleton-row">
+                    <div class="skeleton-item"></div>
+                    <div class="skeleton-item"></div>
+                    <div class="skeleton-item"></div>
+                </div>
+                <div class="skeleton-divider"></div>
+                <div class="skeleton-row">
+                    <div class="skeleton-item"></div>
+                    <div class="skeleton-item"></div>
+                    <div class="skeleton-item"></div>
+                </div>
+                <div class="skeleton-divider"></div>
+                <div class="skeleton-row">
+                    <div class="skeleton-item"></div>
+                    <div class="skeleton-item"></div>
+                </div>
+                <div class="skeleton-divider"></div>
+                <div class="skeleton-badges">
+                    <div class="skeleton-badge"></div>
+                    <div class="skeleton-badge"></div>
+                    <div class="skeleton-badge"></div>
+                </div>
+            </div>
+            <div class="loading-stats">
+                <div class="spinner"></div>
+                <span class="loading-text">获取 Lab 数据...</span>
+            </div>
+        </div>`;
+
+        // 注入加载动画样式 - 增强视觉效果
+        const loadingStyleSheet = document.createElement('style');
+        loadingStyleSheet.textContent = `
+            .loading-container {
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+                width: 100%;
+                animation: fadeIn 0.3s ease;
+            }
+            .loading-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            .loading-title {
+                font-size: 13px;
+                font-weight: 600;
+                color: #1f2937;
+                display: flex;
+                align-items: center;
+                gap: 5px;
+                position: relative;
+            }
+            .pulse-ring {
+                width: 10px;
+                height: 10px;
+                border-radius: 50%;
+                background-color: #3b82f6;
+                position: absolute;
+                left: -5px;
+                animation: pulseRing 1.5s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+            }
+            @keyframes pulseRing {
+                0% {
+                    transform: scale(0.5);
+                    opacity: 0.5;
+                }
+                50% {
+                    transform: scale(1);
+                    opacity: 0.2;
+                }
+                100% {
+                    transform: scale(1.5);
+                    opacity: 0;
+                }
+            }
+            .loading-skeleton {
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+                padding: 5px 0;
+            }
+            .skeleton-row {
+                display: flex;
+                gap: 8px;
+                width: 100%;
+            }
+            .skeleton-item {
+                height: 32px;
+                flex: 1;
+                background: linear-gradient(90deg, #f0f0f0 0%, #e0e0e0 50%, #f0f0f0 100%);
+                background-size: 200% 100%;
+                animation: shimmer 1.5s infinite linear;
+                border-radius: 6px;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            }
+            .skeleton-divider {
+                height: 1px;
+                width: 100%;
+                background-color: #e5e7eb;
+                margin: 2px 0;
+            }
+            .skeleton-badges {
+                display: flex;
+                gap: 8px;
+                width: 100%;
+            }
+            .skeleton-badge {
+                height: 22px;
+                flex: 1;
+                background: linear-gradient(90deg, #f0f0f0 0%, #e0e0e0 50%, #f0f0f0 100%);
+                background-size: 200% 100%;
+                animation: shimmer 1.5s infinite linear;
+                border-radius: 6px;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            }
+            @keyframes shimmer {
+                0% {
+                    background-position: 200% 0;
+                }
+                100% {
+                    background-position: -200% 0;
+                }
+            }
+            @keyframes fadeIn {
+                from {
+                    opacity: 0.7;
+                }
+                to {
+                    opacity: 1;
+                }
+            }
+            .loading-stats {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                font-size: 12px;
+                color: #4b5563;
+                margin-top: 4px;
+                padding: 6px 8px;
+                border-radius: 4px;
+                background-color: rgba(239, 246, 255, 0.7);
+                box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+                border: 1px solid rgba(59, 130, 246, 0.2);
+            }
+            .loading-text {
+                font-weight: 500;
+            }
+            .spinner {
+                width: 12px;
+                height: 12px;
+                border: 2px solid #3b82f6;
+                border-top-color: transparent;
+                border-radius: 50%;
+                animation: spin 1s linear infinite;
+            }
+            @keyframes spin {
+                to {
+                    transform: rotate(360deg);
+                }
+            }
+            .pulse-dot {
+                width: 8px;
+                height: 8px;
+                background-color: #3b82f6;
+                border-radius: 50%;
+                animation: pulse 1.5s infinite;
+            }
+            @keyframes pulse {
+                0% {
+                    transform: scale(0.8);
+                    opacity: 0.5;
+                }
+                50% {
+                    transform: scale(1.1);
+                    opacity: 1;
+                }
+                100% {
+                    transform: scale(0.8);
+                    opacity: 0.5;
+                }
+            }
+        `;
+        labDataContainer.appendChild(loadingStyleSheet);
+
+        // 立即显示卡片
+        setTimeout(() => {
+            if (labDataContainer && buttonContainer.contains(labDataContainer)) {
+                labDataContainer.style.opacity = '1';
+                labDataContainer.style.transform = 'translateY(0)';
+            }
+        }, 10);
 
         // Delay fetching data until after page load is complete
         // Use requestIdleCallback for browsers that support it, otherwise use setTimeout
@@ -62,9 +266,6 @@
                     method: "GET",
                     url: apiUrl,
                     onload: function (response) {
-                        labDataContainer.style.opacity = '1';
-                        labDataContainer.style.transform = 'translateY(0)';
-
                         if (response.status >= 200 && response.status < 300) {
                             const data = JSON.parse(response.responseText);
                             const learned = data.ALL_LEARNED || 0;
@@ -107,6 +308,10 @@
                                     align-items: center;
                                     gap: 5px;
                                     padding: 2px 0;
+                                    opacity: 0;
+                                    transform: translateY(8px);
+                                    animation: fadeInUp 0.4s ease forwards;
+                                    animation-delay: 0.1s;
                                 }
                                 .stats-row {
                                     display: flex;
@@ -115,10 +320,18 @@
                                     margin-bottom: 8px;
                                     padding: 5px;
                                     border-radius: 8px;
+                                    opacity: 0;
+                                    transform: translateY(8px);
+                                    animation: fadeInUp 0.4s ease forwards;
                                 }
                                 .stats-row:nth-of-type(1) {
+                                    animation-delay: 0.2s;
                                 }
                                 .stats-row:nth-of-type(2) {
+                                    animation-delay: 0.3s;
+                                }
+                                .stats-row:nth-of-type(3) {
+                                    animation-delay: 0.4s;
                                 }
                                 .badge-row {
                                     background-color: rgba(254, 243, 199, 0.3); /* 浅黄色背景 */
@@ -129,6 +342,45 @@
                                     align-items: stretch;
                                     width: 100%;
                                     gap: 6px;
+                                    opacity: 0;
+                                    transform: translateY(8px);
+                                    animation: fadeInUp 0.4s ease forwards;
+                                    animation-delay: 0.5s;
+                                }
+                                .divider {
+                                    height: 1px;
+                                    background: rgba(229, 231, 235, 0.5);
+                                    margin: 6px 0;
+                                    width: 100%;
+                                    opacity: 0;
+                                    animation: fadeIn 0.4s ease forwards;
+                                }
+                                .divider:nth-of-type(1) {
+                                    animation-delay: 0.25s;
+                                }
+                                .divider:nth-of-type(2) {
+                                    animation-delay: 0.35s;
+                                }
+                                .divider:nth-of-type(3) {
+                                    animation-delay: 0.45s;
+                                }
+                                @keyframes fadeInUp {
+                                    from {
+                                        opacity: 0;
+                                        transform: translateY(8px);
+                                    }
+                                    to {
+                                        opacity: 1;
+                                        transform: translateY(0);
+                                    }
+                                }
+                                @keyframes fadeIn {
+                                    from {
+                                        opacity: 0;
+                                    }
+                                    to {
+                                        opacity: 1;
+                                    }
                                 }
                                 .stat-item {
                                     flex: 1;
@@ -187,12 +439,6 @@
                                     white-space: nowrap;
                                     overflow: hidden;
                                     text-overflow: ellipsis;
-                                }
-                                .divider {
-                                    height: 1px;
-                                    background: rgba(229, 231, 235, 0.5);
-                                    margin: 6px 0;
-                                    width: 100%;
                                 }
                                 .badge {
                                     flex: 1 1 0;
@@ -379,6 +625,10 @@
                             `;
                             labDataContainer.appendChild(contentWrapper);
 
+                            // 添加渐入的整体动画效果
+                            labDataContainer.style.opacity = '1';
+                            labDataContainer.style.transform = 'translateY(0)';
+
                             // Add hover effects for Github link
                             const githubAnchor = labDataContainer.querySelector('a.github');
                             if (githubAnchor) {
@@ -395,21 +645,26 @@
                             }
                         } else {
                             console.error('Failed to fetch lab data:', response.statusText);
-                            labDataContainer.innerHTML = `<div class="loading-stats" style="color: #ef4444;"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg> Failed to load stats</div>`;
+                            labDataContainer.innerHTML = `<div class="loading-stats" style="color: #ef4444; padding: 15px; display: flex; align-items: center; gap: 8px; font-weight: 500;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg> 
+                                无法加载数据，请稍后再试
+                            </div>`;
                         }
                     },
                     onerror: function (error) {
                         console.error('Error fetching lab data:', error);
-                        labDataContainer.style.opacity = '1';
-                        labDataContainer.style.transform = 'translateY(0)';
-                        labDataContainer.innerHTML = `<div class="loading-stats" style="color: #ef4444;"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg> Failed to load stats</div>`;
+                        labDataContainer.innerHTML = `<div class="loading-stats" style="color: #ef4444; padding: 15px; display: flex; align-items: center; gap: 8px; font-weight: 500;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg> 
+                            网络错误，请检查连接
+                        </div>`;
                     }
                 });
             } catch (error) {
                 console.error('Error fetching or processing lab data:', error);
-                labDataContainer.style.opacity = '1'; // Ensure visibility on error
-                labDataContainer.style.transform = 'translateY(0)';
-                labDataContainer.innerHTML = `<div class="loading-stats" style="color: #ef4444;"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg> Failed to load stats</div>`;
+                labDataContainer.innerHTML = `<div class="loading-stats" style="color: #ef4444; padding: 15px; display: flex; align-items: center; gap: 8px; font-weight: 500;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg> 
+                    处理数据时出错
+                </div>`;
             }
         };
 
@@ -685,7 +940,7 @@
                     fetchAndDisplayLabData(labAlias, buttonContainer);
                 }
             }
-            
+
             // 关闭菜单
             isMenuVisible = false;
             menuContainer.style.display = 'none';
@@ -914,15 +1169,15 @@
         if (labMatch && labMatch[1] && isStatsCardVisible) {
             const labAlias = labMatch[1];
             fetchAndDisplayLabData(labAlias, buttonContainer);
-            
+
             // 确保统计卡片上的链接可点击
             setTimeout(() => {
                 const labDataContainer = buttonContainer.querySelector('.labex-stats-container');
                 if (labDataContainer) {
                     labDataContainer.style.pointerEvents = 'auto';
-                    
+
                     // 处理菜单和卡片的显示优先级
-                    document.addEventListener('click', function(e) {
+                    document.addEventListener('click', function (e) {
                         // 当点击菜单按钮且菜单打开时，暂时禁用卡片的点击事件
                         if (isMenuVisible && !menuContainer.contains(e.target)) {
                             const statsCard = buttonContainer.querySelector('.labex-stats-container');
