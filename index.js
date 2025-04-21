@@ -14,6 +14,40 @@
 (function () {
     'use strict';
 
+    // Function to format timestamp into relative time
+    function formatRelativeTime(timestamp) {
+        const now = new Date();
+        const past = new Date(timestamp);
+        const diffInSeconds = Math.floor((now - past) / 1000);
+
+        if (diffInSeconds < 60) {
+            return `${diffInSeconds} seconds ago`;
+        }
+
+        const diffInMinutes = Math.floor(diffInSeconds / 60);
+        if (diffInMinutes < 60) {
+            return `${diffInMinutes} minute${diffInMinutes > 1 ? 's' : ''} ago`;
+        }
+
+        const diffInHours = Math.floor(diffInMinutes / 60);
+        if (diffInHours < 24) {
+            const remainingMinutes = diffInMinutes % 60;
+            let result = `${diffInHours} hour${diffInHours > 1 ? 's' : ''}`;
+            if (remainingMinutes > 0) {
+                result += `, ${remainingMinutes} minute${remainingMinutes > 1 ? 's' : ''}`;
+            }
+            return result + ' ago';
+        }
+
+        const diffInDays = Math.floor(diffInHours / 24);
+        const remainingHours = diffInHours % 24;
+        let result = `${diffInDays} day${diffInDays > 1 ? 's' : ''}`;
+        if (remainingHours > 0) {
+            result += `, ${remainingHours} hour${remainingHours > 1 ? 's' : ''}`;
+        }
+        return result + ' ago';
+    }
+
     // Function to fetch and display lab data
     async function fetchAndDisplayLabData(labAlias, buttonContainer) {
         const apiUrl = `https://labex-api-proxy.huhuhang.workers.dev/feishu/labs/${labAlias}`;
@@ -280,17 +314,10 @@
                             const isOpenNetwork = data.OPEN_NETWORK === true;
                             const updatedAtTimestamp = data.UPDATE_AT; // Extract timestamp
 
-                            // Format the timestamp
-                            let formattedUpdatedAt = '';
+                            // Format the timestamp as relative time
+                            let relativeUpdatedAt = '';
                             if (updatedAtTimestamp) {
-                                const date = new Date(updatedAtTimestamp);
-                                const year = date.getFullYear();
-                                const month = (date.getMonth() + 1).toString().padStart(2, '0');
-                                const day = date.getDate().toString().padStart(2, '0');
-                                const hours = date.getHours().toString().padStart(2, '0');
-                                const minutes = date.getMinutes().toString().padStart(2, '0');
-                                const seconds = date.getSeconds().toString().padStart(2, '0');
-                                formattedUpdatedAt = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+                                relativeUpdatedAt = formatRelativeTime(updatedAtTimestamp);
                             }
 
                             const totalReviews = positiveReviews + neutralReviews + negativeReviews;
@@ -557,7 +584,7 @@
                                         <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
                                     </svg>
                                     Lab Stats
-                                    ${formattedUpdatedAt ? `<span class="updated-at" title="Last Data Update Time">⏱ ${formattedUpdatedAt}</span>` : ''}
+                                    ${relativeUpdatedAt ? `<span class="updated-at" title="Last Data Update Time">⏱ ${relativeUpdatedAt}</span>` : ''}
                                 </div>
                                 
                                 <!-- 第一排：学习人数、通过人数、通过率 -->
