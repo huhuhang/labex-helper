@@ -21,29 +21,29 @@
         const diffInSeconds = Math.floor((now - past) / 1000);
 
         if (diffInSeconds < 60) {
-            return `${diffInSeconds} seconds ago`;
+            return `${diffInSeconds}s ago`;
         }
 
         const diffInMinutes = Math.floor(diffInSeconds / 60);
         if (diffInMinutes < 60) {
-            return `${diffInMinutes} minute${diffInMinutes > 1 ? 's' : ''} ago`;
+            return `${diffInMinutes}m ago`;
         }
 
         const diffInHours = Math.floor(diffInMinutes / 60);
         if (diffInHours < 24) {
             const remainingMinutes = diffInMinutes % 60;
-            let result = `${diffInHours} hour${diffInHours > 1 ? 's' : ''}`;
+            let result = `${diffInHours}h`;
             if (remainingMinutes > 0) {
-                result += `, ${remainingMinutes} minute${remainingMinutes > 1 ? 's' : ''}`;
+                result += `, ${remainingMinutes}m`;
             }
             return result + ' ago';
         }
 
         const diffInDays = Math.floor(diffInHours / 24);
         const remainingHours = diffInHours % 24;
-        let result = `${diffInDays} day${diffInDays > 1 ? 's' : ''}`;
+        let result = `${diffInDays}d`;
         if (remainingHours > 0) {
-            result += `, ${remainingHours} hour${remainingHours > 1 ? 's' : ''}`;
+            result += `, ${remainingHours}h`;
         }
         return result + ' ago';
     }
