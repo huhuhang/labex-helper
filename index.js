@@ -1,14 +1,14 @@
 // ==UserScript==
 // @name         LabEx Helper
 // @namespace    http://tampermonkey.net/
-// @version      1.9.3
+// @version      1.9.8
 // @description  Helper script for labex.io website
 // @author       huhuhang
 // @match        https://labex.io/*
 // @match        https://labex.io/zh/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=labex.io
 // @grant        GM_xmlhttpRequest
-// @connect      labex-api-proxy.huhuhang.workers.dev
+// @connect      labex-api-proxy.zhanghang.me
 // ==/UserScript==
 
 (function () {
@@ -50,7 +50,7 @@
 
     // Function to fetch and display lab data
     async function fetchAndDisplayLabData(labAlias, buttonContainer) {
-        const apiUrl = `https://labex-api-proxy.huhuhang.workers.dev/feishu/labs/${labAlias}`;
+        const apiUrl = `https://labex-api-proxy.zhanghang.me/feishu/labs/${labAlias}`;
 
         // Remove existing data container if any
         const existingDataContainer = buttonContainer.querySelector('.labex-stats-container');
