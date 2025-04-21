@@ -336,9 +336,9 @@
                                 .labex-stats-container {
                                     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
                                 }
-                                .labex-stats-container strong { 
-                                    font-weight: 600; 
-                                    color: #1f2937; 
+                                .labex-stats-container strong {
+                                    font-weight: 600;
+                                    color: #1f2937;
                                 }
                                 .labex-stats-container .title {
                                     font-size: 13px;
@@ -517,20 +517,20 @@
                                     transform: translateY(-1px);
                                     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
                                 }
-                                .badge.verified { 
+                                .badge.verified {
                                     background-color: rgba(134, 239, 172, 0.7); /* 浅绿色背景 */
-                                    color: #065f46; 
+                                    color: #065f46;
                                 }
-                                .badge.unverified { 
+                                .badge.unverified {
                                     background-color: rgba(252, 165, 165, 0.7); /* 浅红色背景 */
-                                    color: #991b1b; 
-                                }
-                                .badge.fee { background-color: #f3f4f6; color: #4b5563; }
-                                .badge.network-open { 
-                                    background-color: rgba(252, 165, 165, 0.7); /* 浅红色背景 */ 
                                     color: #991b1b;
                                 }
-                                .badge.network-closed { 
+                                .badge.fee { background-color: #f3f4f6; color: #4b5563; }
+                                .badge.network-open {
+                                    background-color: rgba(252, 165, 165, 0.7); /* 浅红色背景 */
+                                    color: #991b1b;
+                                }
+                                .badge.network-closed {
                                     background-color: rgba(134, 239, 172, 0.7); /* 浅绿色背景 */
                                     color: #065f46;
                                 }
@@ -586,7 +586,7 @@
                                     Lab Stats
                                     ${relativeUpdatedAt ? `<span class="updated-at" title="Last Data Update Time">⏱ ${relativeUpdatedAt}</span>` : ''}
                                 </div>
-                                
+
                                 <!-- 第一排：学习人数、通过人数、通过率 -->
                                 <div class="stats-row">
                                     <div class="stat-item" title="Total Learners">
@@ -602,9 +602,9 @@
                                         <div class="label">Pass Rate</div>
                                     </div>
                                 </div>
-                                
+
                                 <div class="divider"></div>
-                                
+
                                 <!-- 第二排：好评、中立评价、差评 -->
                                 <div class="stats-row">
                                     <div class="stat-item" title="Positive Reviews (${positiveRate}%)">
@@ -620,9 +620,9 @@
                                         <div class="label">👎 Dislikes</div>
                                     </div>
                                 </div>
-                                
+
                                 <div class="divider"></div>
-                                
+
                                 <!-- 新增：综合好评率和差评率 -->
                                 <div class="stats-row">
                                     <div class="stat-item positive-rate" title="Combined Positive Rate (Likes + Neutral)">
@@ -634,9 +634,9 @@
                                         <div class="label">😟 Dislike</div>
                                     </div>
                                 </div>
-                                
+
                                 <div class="divider"></div>
-                                
+
                                 <!-- 第三排：验证状态、网络需求、GitHub 链接 -->
                                 <div class="badge-row">
                                     <span class="badge ${isVerified ? 'verified' : 'unverified'}" title="${isVerified ? 'Verified Lab' : 'Not Verified'}">
@@ -694,7 +694,7 @@
                         } else {
                             console.error('Failed to fetch lab data:', response.statusText);
                             labDataContainer.innerHTML = `<div class="loading-stats" style="color: #ef4444; padding: 15px; display: flex; align-items: center; gap: 8px; font-weight: 500;">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg> 
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
                                 Unable to load data. Try again later.
                             </div>`;
                         }
@@ -702,7 +702,7 @@
                     onerror: function (error) {
                         console.error('Error fetching lab data:', error);
                         labDataContainer.innerHTML = `<div class="loading-stats" style="color: #ef4444; padding: 15px; display: flex; align-items: center; gap: 8px; font-weight: 500;">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg> 
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
                             Network error. Check connection.
                         </div>`;
                     }
@@ -710,7 +710,7 @@
             } catch (error) {
                 console.error('Error fetching or processing lab data:', error);
                 labDataContainer.innerHTML = `<div class="loading-stats" style="color: #ef4444; padding: 15px; display: flex; align-items: center; gap: 8px; font-weight: 500;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg> 
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
                     Error processing data.
                 </div>`;
             }
@@ -1199,7 +1199,7 @@
         menuContainer.appendChild(modeMenuItem);
         menuContainer.appendChild(quickStartMenuItem);
         menuContainer.appendChild(zenModeMenuItem);
-        menuContainer.appendChild(plexFontMenuItem);  // Add the IBM Plex Mono font toggle
+        menuContainer.appendChild(plexFontMenuItem);
         menuContainer.appendChild(toggleStatsCardMenuItem); // 添加信息卡片切换选项
         menuContainer.appendChild(clearCacheMenuItem);
         menuContainer.appendChild(closeMenuItem);
