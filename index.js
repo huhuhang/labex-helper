@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         LabEx Helper
 // @namespace    http://tampermonkey.net/
-// @version      1.9.2
+// @version      1.9.3
 // @description  Helper script for labex.io website
 // @author       huhuhang
 // @match        https://labex.io/*
@@ -278,6 +278,20 @@
                             const negativeReviews = data.NEGATIVE_REVIEW || 0;
                             const isVerified = data.VERIFIED === true;
                             const isOpenNetwork = data.OPEN_NETWORK === true;
+                            const updatedAtTimestamp = data.UPDATE_AT; // Extract timestamp
+
+                            // Format the timestamp
+                            let formattedUpdatedAt = '';
+                            if (updatedAtTimestamp) {
+                                const date = new Date(updatedAtTimestamp);
+                                const year = date.getFullYear();
+                                const month = (date.getMonth() + 1).toString().padStart(2, '0');
+                                const day = date.getDate().toString().padStart(2, '0');
+                                const hours = date.getHours().toString().padStart(2, '0');
+                                const minutes = date.getMinutes().toString().padStart(2, '0');
+                                const seconds = date.getSeconds().toString().padStart(2, '0');
+                                formattedUpdatedAt = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+                            }
 
                             const totalReviews = positiveReviews + neutralReviews + negativeReviews;
                             const passRate = learned > 0 ? ((passed / learned) * 100).toFixed(1) : '0.0';
@@ -312,6 +326,12 @@
                                     transform: translateY(8px);
                                     animation: fadeInUp 0.4s ease forwards;
                                     animation-delay: 0.1s;
+                                }
+                                .labex-stats-container .updated-at {
+                                    font-size: 10px;
+                                    color: #6b7280;
+                                    margin-left: auto; /* Push to the right */
+                                    font-weight: 400;
                                 }
                                 .stats-row {
                                     display: flex;
@@ -537,6 +557,7 @@
                                         <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
                                     </svg>
                                     Lab Stats
+                                    ${formattedUpdatedAt ? `<span class="updated-at" title="Last Data Update Time">⏱ ${formattedUpdatedAt}</span>` : ''}
                                 </div>
                                 
                                 <!-- 第一排：学习人数、通过人数、通过率 -->
