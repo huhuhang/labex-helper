@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         LabEx Helper
 // @namespace    http://tampermonkey.net/
-// @version      1.9.1
+// @version      1.9.2
 // @description  Helper script for labex.io website
 // @author       huhuhang
 // @match        https://labex.io/*
@@ -61,7 +61,7 @@
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
                     </svg>
-                    Lab 详情加载中...
+                    Loading Lab Stats...
                 </div>
             </div>
             <div class="loading-skeleton">
@@ -90,7 +90,7 @@
             </div>
             <div class="loading-stats">
                 <div class="spinner"></div>
-                <span class="loading-text">获取 Lab 数据...</span>
+                <span class="loading-text">Fetching Lab data...</span>
             </div>
         </div>`;
 
@@ -536,22 +536,22 @@
                                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                         <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
                                     </svg>
-                                    Lab 详情
+                                    Lab Stats
                                 </div>
                                 
                                 <!-- 第一排：学习人数、通过人数、通过率 -->
                                 <div class="stats-row">
                                     <div class="stat-item" title="Total Learners">
                                         <div class="value">${learned.toLocaleString()}</div>
-                                        <div class="label">学习人数</div>
+                                        <div class="label">Learners</div>
                                     </div>
                                     <div class="stat-item" title="Students Passed">
                                         <div class="value">${passed.toLocaleString()}</div>
-                                        <div class="label">通过人数</div>
+                                        <div class="label">Passed</div>
                                     </div>
                                     <div class="stat-item" title="Success Rate">
                                         <div class="value">${passRate}%</div>
-                                        <div class="label">通过率</div>
+                                        <div class="label">Pass Rate</div>
                                     </div>
                                 </div>
                                 
@@ -561,15 +561,15 @@
                                 <div class="stats-row">
                                     <div class="stat-item" title="Positive Reviews (${positiveRate}%)">
                                         <div class="value">${positiveReviews.toLocaleString()}</div>
-                                        <div class="label">👍 好评</div>
+                                        <div class="label">👍 Likes</div>
                                     </div>
                                     <div class="stat-item" title="Neutral Reviews">
                                         <div class="value">${neutralReviews.toLocaleString()}</div>
-                                        <div class="label">😐 中立</div>
+                                        <div class="label">😐 Neutral</div>
                                     </div>
                                     <div class="stat-item" title="Negative Reviews (${negativeRate}%)">
                                         <div class="value">${negativeReviews.toLocaleString()}</div>
-                                        <div class="label">👎 差评</div>
+                                        <div class="label">👎 Dislikes</div>
                                     </div>
                                 </div>
                                 
@@ -579,11 +579,11 @@
                                 <div class="stats-row">
                                     <div class="stat-item positive-rate" title="Combined Positive Rate (Likes + Neutral)">
                                         <div class="value">${combinedPositiveRate}%</div>
-                                        <div class="label">😊 好评率</div>
+                                        <div class="label">😊 Approval</div>
                                     </div>
                                     <div class="stat-item negative-rate" title="Dislike Rate">
                                         <div class="value">${dislikeRate}%</div>
-                                        <div class="label">😟 差评率</div>
+                                        <div class="label">😟 Dislike</div>
                                     </div>
                                 </div>
                                 
@@ -596,7 +596,7 @@
                                             <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
                                             <polyline points="22 4 12 14.01 9 11.01"></polyline>
                                         </svg>
-                                        ${isVerified ? '已验证' : '未验证'}
+                                        ${isVerified ? 'Verified' : 'Unverified'}
                                     </span>
                                     <span class="badge ${isOpenNetwork ? 'network-open' : 'network-closed'}" title="${isOpenNetwork ? 'Open Network Required' : 'No Open Network Required'}">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -604,7 +604,7 @@
                                             <line x1="2" y1="12" x2="22" y2="12"></line>
                                             <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
                                         </svg>
-                                        ${isOpenNetwork ? '开放网络' : '关闭网络'}
+                                        ${isOpenNetwork ? 'Open Net' : 'Local Net'}
                                     </span>
                                     ${githubLink ? `
                                     <a class="badge github" href="${githubLink}" target="_blank" title="${githubText}">
@@ -647,7 +647,7 @@
                             console.error('Failed to fetch lab data:', response.statusText);
                             labDataContainer.innerHTML = `<div class="loading-stats" style="color: #ef4444; padding: 15px; display: flex; align-items: center; gap: 8px; font-weight: 500;">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg> 
-                                无法加载数据，请稍后再试
+                                Unable to load data. Try again later.
                             </div>`;
                         }
                     },
@@ -655,7 +655,7 @@
                         console.error('Error fetching lab data:', error);
                         labDataContainer.innerHTML = `<div class="loading-stats" style="color: #ef4444; padding: 15px; display: flex; align-items: center; gap: 8px; font-weight: 500;">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg> 
-                            网络错误，请检查连接
+                            Network error. Check connection.
                         </div>`;
                     }
                 });
@@ -663,7 +663,7 @@
                 console.error('Error fetching or processing lab data:', error);
                 labDataContainer.innerHTML = `<div class="loading-stats" style="color: #ef4444; padding: 15px; display: flex; align-items: center; gap: 8px; font-weight: 500;">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg> 
-                    处理数据时出错
+                    Error processing data.
                 </div>`;
             }
         };
