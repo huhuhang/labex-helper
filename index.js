@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         LabEx Helper
 // @namespace    http://tampermonkey.net/
-// @version      1.9.8
+// @version      2.0.0
 // @description  Helper script for labex.io website
 // @author       huhuhang
 // @match        https://labex.io/*
@@ -744,7 +744,7 @@
             left: 20px;
             bottom: 20px;
             z-index: 9999;
-            font-family: -apple-system, Maple Mono NF CN, IBM Plex Mono, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            font-family: IBM Plex Mono, monospace;
         `;
 
         // Create menu container with modern design
@@ -1012,7 +1012,7 @@
                     styleElement.id = styleId;
                     styleElement.textContent = `
                         * {
-                            font-family: 'Maple Mono NF CN','IBM Plex Mono', monospace !important;
+                            font-family: 'IBM Plex Mono', monospace !important;
                         }
                     `;
                     document.head.appendChild(styleElement);
