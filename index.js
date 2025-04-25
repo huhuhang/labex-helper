@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         LabEx Helper
 // @namespace    http://tampermonkey.net/
-// @version      2.0.1
+// @version      2.0.2
 // @description  Helper script for labex.io website
 // @author       huhuhang
 // @match        https://labex.io/*
@@ -13,6 +13,25 @@
 
 (function () {
     'use strict';
+
+    // Function to detect system dark mode preference
+    function prefersDarkMode() {
+        return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+
+    // Function to get user theme preference (or default to system preference)
+    function getUserThemePreference() {
+        const savedPreference = localStorage.getItem('labex_theme_preference');
+        if (savedPreference === 'light' || savedPreference === 'dark') {
+            return savedPreference;
+        }
+        return prefersDarkMode() ? 'dark' : 'light';
+    }
+
+    // Function to save user theme preference
+    function saveUserThemePreference(theme) {
+        localStorage.setItem('labex_theme_preference', theme);
+    }
 
     // Function to format timestamp into relative time
     function formatRelativeTime(timestamp) {
@@ -60,17 +79,23 @@
 
         const labDataContainer = document.createElement('div');
         labDataContainer.classList.add('labex-stats-container');
+
+        // 获取当前主题模式
+        const currentTheme = getUserThemePreference();
+
+        // 根据主题设置样式
+        const isDarkMode = currentTheme === 'dark';
         labDataContainer.style.cssText = `
             position: absolute;
             bottom: 40px;
             left: 0;
-            background: rgba(255, 255, 255, 0.98);
+            background: ${isDarkMode ? 'rgba(30, 30, 30, 0.98)' : 'rgba(255, 255, 255, 0.98)'};
             backdrop-filter: blur(10px);
             padding: 10px 12px;
             border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+            box-shadow: ${isDarkMode ? '0 4px 20px rgba(0, 0, 0, 0.3)' : '0 4px 20px rgba(0, 0, 0, 0.12)'};
             font-size: 12px;
-            color: #374151;
+            color: ${isDarkMode ? '#E5E7EB' : '#374151'};
             display: flex;
             flex-direction: column;
             gap: 6px;
@@ -79,7 +104,7 @@
             opacity: 1;
             transform: translateY(0);
             transition: opacity 0.4s ease, transform 0.4s ease;
-            border: 1px solid rgba(0, 0, 0, 0.1);
+            border: 1px solid ${isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'};
             z-index: 9998;
             pointer-events: auto;
         `;
@@ -146,7 +171,7 @@
             .loading-title {
                 font-size: 13px;
                 font-weight: 600;
-                color: #1f2937;
+                color: ${isDarkMode ? '#E5E7EB' : '#1f2937'};
                 display: flex;
                 align-items: center;
                 gap: 5px;
@@ -189,16 +214,18 @@
             .skeleton-item {
                 height: 32px;
                 flex: 1;
-                background: linear-gradient(90deg, #f0f0f0 0%, #e0e0e0 50%, #f0f0f0 100%);
+                background: ${isDarkMode ?
+                'linear-gradient(90deg, #2a2a2a 0%, #3a3a3a 50%, #2a2a2a 100%)' :
+                'linear-gradient(90deg, #f0f0f0 0%, #e0e0e0 50%, #f0f0f0 100%)'};
                 background-size: 200% 100%;
                 animation: shimmer 1.5s infinite linear;
                 border-radius: 6px;
-                box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+                box-shadow: ${isDarkMode ? '0 1px 3px rgba(0,0,0,0.2)' : '0 1px 3px rgba(0,0,0,0.05)'};
             }
             .skeleton-divider {
                 height: 1px;
                 width: 100%;
-                background-color: #e5e7eb;
+                background-color: ${isDarkMode ? '#3f3f46' : '#e5e7eb'};
                 margin: 2px 0;
             }
             .skeleton-badges {
@@ -209,11 +236,13 @@
             .skeleton-badge {
                 height: 22px;
                 flex: 1;
-                background: linear-gradient(90deg, #f0f0f0 0%, #e0e0e0 50%, #f0f0f0 100%);
+                background: ${isDarkMode ?
+                'linear-gradient(90deg, #2a2a2a 0%, #3a3a3a 50%, #2a2a2a 100%)' :
+                'linear-gradient(90deg, #f0f0f0 0%, #e0e0e0 50%, #f0f0f0 100%)'};
                 background-size: 200% 100%;
                 animation: shimmer 1.5s infinite linear;
                 border-radius: 6px;
-                box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+                box-shadow: ${isDarkMode ? '0 1px 3px rgba(0,0,0,0.2)' : '0 1px 3px rgba(0,0,0,0.05)'};
             }
             @keyframes shimmer {
                 0% {
@@ -236,13 +265,13 @@
                 align-items: center;
                 gap: 8px;
                 font-size: 12px;
-                color: #4b5563;
+                color: ${isDarkMode ? '#9CA3AF' : '#4b5563'};
                 margin-top: 4px;
                 padding: 6px 8px;
                 border-radius: 4px;
-                background-color: rgba(239, 246, 255, 0.7);
+                background-color: ${isDarkMode ? 'rgba(37, 99, 235, 0.2)' : 'rgba(239, 246, 255, 0.7)'};
                 box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-                border: 1px solid rgba(59, 130, 246, 0.2);
+                border: 1px solid ${isDarkMode ? 'rgba(59, 130, 246, 0.3)' : 'rgba(59, 130, 246, 0.2)'};
             }
             .loading-text {
                 font-weight: 500;
@@ -338,12 +367,12 @@
                                 }
                                 .labex-stats-container strong {
                                     font-weight: 600;
-                                    color: #1f2937;
+                                    color: ${isDarkMode ? '#E5E7EB' : '#1f2937'};
                                 }
                                 .labex-stats-container .title {
                                     font-size: 13px;
                                     font-weight: 600;
-                                    color: #1f2937;
+                                    color: ${isDarkMode ? '#E5E7EB' : '#1f2937'};
                                     margin-bottom: 6px;
                                     display: flex;
                                     align-items: center;
@@ -356,7 +385,7 @@
                                 }
                                 .labex-stats-container .updated-at {
                                     font-size: 10px;
-                                    color: #6b7280;
+                                    color: ${isDarkMode ? '#9CA3AF' : '#6b7280'};
                                     margin-left: auto; /* Push to the right */
                                     font-weight: 400;
                                 }
@@ -381,7 +410,7 @@
                                     animation-delay: 0.4s;
                                 }
                                 .badge-row {
-                                    background-color: rgba(254, 243, 199, 0.3); /* 浅黄色背景 */
+                                    background-color: ${isDarkMode ? 'rgba(254, 243, 199, 0.1)' : 'rgba(254, 243, 199, 0.3)'}; /* 浅黄色背景 */
                                     border-radius: 8px;
                                     padding: 5px;
                                     display: flex;
@@ -396,7 +425,7 @@
                                 }
                                 .divider {
                                     height: 1px;
-                                    background: rgba(229, 231, 235, 0.5);
+                                    background: ${isDarkMode ? 'rgba(75, 85, 99, 0.3)' : 'rgba(229, 231, 235, 0.5)'};
                                     margin: 6px 0;
                                     width: 100%;
                                     opacity: 0;
@@ -435,7 +464,7 @@
                                     flex-direction: column;
                                     align-items: center;
                                     justify-content: center;
-                                    background: rgba(255, 255, 255, 0.7);
+                                    background: ${isDarkMode ? 'rgba(50, 50, 50, 0.7)' : 'rgba(255, 255, 255, 0.7)'};
                                     padding: 6px 4px;
                                     border-radius: 6px;
                                     min-width: 0;
@@ -450,26 +479,26 @@
                                     margin-right: 0;
                                 }
                                 .stat-item:hover {
-                                    background: rgba(243, 244, 246, 0.9);
+                                    background: ${isDarkMode ? 'rgba(60, 60, 60, 0.9)' : 'rgba(243, 244, 246, 0.9)'};
                                     transform: translateY(-2px);
                                 }
                                 .stat-item.positive-rate {
-                                    background-color: rgba(134, 239, 172, 0.7); /* 浅绿色背景 */
-                                    color: #065f46;
+                                    background-color: ${isDarkMode ? 'rgba(59, 130, 246, 0.4)' : 'rgba(134, 239, 172, 0.7)'}; /* 浅绿色背景 */
+                                    color: ${isDarkMode ? '#93c5fd' : '#065f46'};
                                 }
                                 .stat-item.positive-rate:hover {
-                                    background-color: rgba(134, 239, 172, 0.85);
+                                    background-color: ${isDarkMode ? 'rgba(59, 130, 246, 0.5)' : 'rgba(134, 239, 172, 0.85)'};
                                 }
                                 .stat-item.negative-rate {
-                                    background-color: rgba(252, 165, 165, 0.7); /* 浅红色背景 */
-                                    color: #991b1b;
+                                    background-color: ${isDarkMode ? 'rgba(248, 113, 113, 0.4)' : 'rgba(252, 165, 165, 0.7)'}; /* 浅红色背景 */
+                                    color: ${isDarkMode ? '#fca5a5' : '#991b1b'};
                                 }
                                 .stat-item.negative-rate:hover {
-                                    background-color: rgba(252, 165, 165, 0.85);
+                                    background-color: ${isDarkMode ? 'rgba(248, 113, 113, 0.5)' : 'rgba(252, 165, 165, 0.85)'};
                                 }
                                 .stat-item .value {
                                     font-weight: 600;
-                                    color: #1f2937;
+                                    color: ${isDarkMode ? '#E5E7EB' : '#1f2937'};
                                     font-size: 13px;
                                     text-align: center;
                                     width: 100%;
@@ -479,7 +508,7 @@
                                 }
                                 .stat-item .label {
                                     font-size: 10px;
-                                    color: #6b7280;
+                                    color: ${isDarkMode ? '#9CA3AF' : '#6b7280'};
                                     margin-top: 2px;
                                     text-align: center;
                                     width: 100%;
@@ -501,7 +530,7 @@
                                     transition: all 0.2s ease;
                                     margin: 0;
                                     text-align: center;
-                                    background: rgba(255, 255, 255, 0.7);
+                                    background: ${isDarkMode ? 'rgba(50, 50, 50, 0.7)' : 'rgba(255, 255, 255, 0.7)'};
                                     min-width: 0;
                                     overflow: hidden;
                                     text-overflow: ellipsis;
@@ -518,28 +547,28 @@
                                     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
                                 }
                                 .badge.verified {
-                                    background-color: rgba(134, 239, 172, 0.7); /* 浅绿色背景 */
-                                    color: #065f46;
+                                    background-color: ${isDarkMode ? 'rgba(59, 130, 246, 0.4)' : 'rgba(134, 239, 172, 0.7)'}; /* 浅绿色背景 */
+                                    color: ${isDarkMode ? '#93c5fd' : '#065f46'};
                                 }
                                 .badge.unverified {
-                                    background-color: rgba(252, 165, 165, 0.7); /* 浅红色背景 */
-                                    color: #991b1b;
+                                    background-color: ${isDarkMode ? 'rgba(248, 113, 113, 0.4)' : 'rgba(252, 165, 165, 0.7)'}; /* 浅红色背景 */
+                                    color: ${isDarkMode ? '#fca5a5' : '#991b1b'};
                                 }
-                                .badge.fee { background-color: #f3f4f6; color: #4b5563; }
+                                .badge.fee { background-color: ${isDarkMode ? '#374151' : '#f3f4f6'}; color: ${isDarkMode ? '#9CA3AF' : '#4b5563'}; }
                                 .badge.network-open {
-                                    background-color: rgba(252, 165, 165, 0.7); /* 浅红色背景 */
-                                    color: #991b1b;
+                                    background-color: ${isDarkMode ? 'rgba(248, 113, 113, 0.4)' : 'rgba(252, 165, 165, 0.7)'}; /* 浅红色背景 */
+                                    color: ${isDarkMode ? '#fca5a5' : '#991b1b'};
                                 }
                                 .badge.network-closed {
-                                    background-color: rgba(134, 239, 172, 0.7); /* 浅绿色背景 */
-                                    color: #065f46;
+                                    background-color: ${isDarkMode ? 'rgba(59, 130, 246, 0.4)' : 'rgba(134, 239, 172, 0.7)'}; /* 浅绿色背景 */
+                                    color: ${isDarkMode ? '#93c5fd' : '#065f46'};
                                 }
                                 .badge.github {
                                     background-color: transparent;
                                     color: #3b82f6;
                                     text-decoration: none;
                                     cursor: pointer;
-                                    border: 1px solid #dbeafe;
+                                    border: 1px solid ${isDarkMode ? 'rgba(59, 130, 246, 0.3)' : '#dbeafe'};
                                 }
                                 .badge.github svg {
                                     width: 11px; height: 11px;
@@ -549,7 +578,7 @@
                                     align-items: center;
                                     gap: 8px;
                                     font-size: 12px;
-                                    color: #6b7280;
+                                    color: ${isDarkMode ? '#9CA3AF' : '#6b7280'};
                                 }
                                 .pulse-dot {
                                     width: 8px;
@@ -681,12 +710,14 @@
                             const githubAnchor = labDataContainer.querySelector('a.github');
                             if (githubAnchor) {
                                 githubAnchor.onmouseover = () => {
-                                    githubAnchor.style.backgroundColor = '#dbeafe';
+                                    githubAnchor.style.backgroundColor = isDarkMode ? 'rgba(59, 130, 246, 0.2)' : '#dbeafe';
                                     githubAnchor.style.transform = 'translateY(-2px)';
-                                    githubAnchor.style.boxShadow = '0 2px 5px rgba(59, 130, 246, 0.2)';
+                                    githubAnchor.style.boxShadow = isDarkMode ?
+                                        '0 2px 5px rgba(59, 130, 246, 0.3)' :
+                                        '0 2px 5px rgba(59, 130, 246, 0.2)';
                                 };
                                 githubAnchor.onmouseout = () => {
-                                    githubAnchor.style.backgroundColor = '#eff6ff';
+                                    githubAnchor.style.backgroundColor = isDarkMode ? 'rgba(59, 130, 246, 0.1)' : '#eff6ff';
                                     githubAnchor.style.transform = 'translateY(-1px)';
                                     githubAnchor.style.boxShadow = '0 2px 5px rgba(0, 0, 0, 0.05)';
                                 };
@@ -733,6 +764,10 @@
             existingContainer.remove();
         }
 
+        // 获取当前主题模式
+        const currentTheme = getUserThemePreference();
+        const isDarkMode = currentTheme === 'dark';
+
         // 从 localStorage 中获取信息卡片显示状态，默认为显示
         let isStatsCardVisible = localStorage.getItem('labex_stats_card_visible') !== 'false';
 
@@ -753,14 +788,14 @@
             display: none;
             flex-direction: column;
             gap: 4px;
-            background: rgba(255, 255, 255, 0.95);
+            background: ${isDarkMode ? 'rgba(30, 30, 30, 0.95)' : 'rgba(255, 255, 255, 0.95)'};
             backdrop-filter: blur(10px);
             padding: 8px;
             border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            box-shadow: ${isDarkMode ? '0 4px 20px rgba(0, 0, 0, 0.2)' : '0 4px 20px rgba(0, 0, 0, 0.08)'};
             margin-bottom: 8px;
             min-width: 160px;
-            border: 1px solid rgba(0, 0, 0, 0.05);
+            border: 1px solid ${isDarkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)'};
             transform-origin: bottom left;
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         `;
@@ -778,7 +813,7 @@
                 cursor: ${isDisabled ? 'not-allowed' : 'pointer'};
                 font-size: 12px;
                 font-weight: 500;
-                color: ${isDisabled ? '#9CA3AF' : '#374151'};
+                color: ${isDisabled ? (isDarkMode ? '#6B7280' : '#9CA3AF') : (isDarkMode ? '#E5E7EB' : '#374151')};
                 display: flex;
                 align-items: center;
                 gap: 6px;
@@ -794,14 +829,14 @@
 
             if (!isDisabled) {
                 item.onmouseover = function () {
-                    this.style.backgroundColor = 'rgba(75, 85, 99, 0.08)';
+                    this.style.backgroundColor = isDarkMode ? 'rgba(75, 85, 99, 0.2)' : 'rgba(75, 85, 99, 0.08)';
                     this.style.transform = 'translateX(4px)';
-                    this.style.color = '#4B5563';
+                    this.style.color = isDarkMode ? '#F3F4F6' : '#4B5563';
                 };
                 item.onmouseout = function () {
                     this.style.backgroundColor = 'transparent';
                     this.style.transform = 'translateX(0)';
-                    this.style.color = '#374151';
+                    this.style.color = isDarkMode ? '#E5E7EB' : '#374151';
                 };
             }
 
@@ -815,13 +850,17 @@
             width: 28px;
             height: 28px;
             border-radius: 14px;
-            background: linear-gradient(135deg, #4B5563, #374151);
+            background: ${isDarkMode ?
+                'linear-gradient(135deg, #2563EB, #1D4ED8)' :
+                'linear-gradient(135deg, #4B5563, #374151)'};
             border: none;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 2px 10px rgba(75, 85, 99, 0.3);
+            box-shadow: ${isDarkMode ?
+                '0 2px 10px rgba(37, 99, 235, 0.4)' :
+                '0 2px 10px rgba(75, 85, 99, 0.3)'};
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             color: white;
             position: relative;
@@ -924,12 +963,16 @@
         // Button hover effect
         floatingButton.onmouseover = function () {
             this.style.transform = 'scale(1.05)';
-            this.style.boxShadow = '0 6px 24px rgba(75, 85, 99, 0.4)';
+            this.style.boxShadow = isDarkMode ?
+                '0 6px 24px rgba(37, 99, 235, 0.5)' :
+                '0 6px 24px rgba(75, 85, 99, 0.4)';
         };
 
         floatingButton.onmouseout = function () {
             this.style.transform = 'scale(1)';
-            this.style.boxShadow = '0 4px 20px rgba(75, 85, 99, 0.3)';
+            this.style.boxShadow = isDarkMode ?
+                '0 4px 20px rgba(37, 99, 235, 0.4)' :
+                '0 4px 20px rgba(75, 85, 99, 0.3)';
         };
 
         // Create menu items with Feather icons - check routes for disabled state
@@ -1050,15 +1093,15 @@
             left: -12px;
             right: -12px;
             bottom: 100%;
-            background: rgba(255, 255, 255, 0.95);
+            background: ${isDarkMode ? 'rgba(30, 30, 30, 0.95)' : 'rgba(255, 255, 255, 0.95)'};
             backdrop-filter: blur(10px);
             padding: 10px;
             border-radius: 16px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            box-shadow: ${isDarkMode ? '0 4px 20px rgba(0, 0, 0, 0.2)' : '0 4px 20px rgba(0, 0, 0, 0.08)'};
             margin-bottom: 24px;
             flex-direction: column;
             gap: 4px;
-            border: 1px solid rgba(0, 0, 0, 0.05);
+            border: 1px solid ${isDarkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)'};
         `;
 
         const languages = [
@@ -1194,6 +1237,24 @@
             window.open('https://labex.io/labs/linux-your-first-linux-lab-270253?hidelabby=true&hideheader=true', '_blank');
         };
 
+        // Theme toggle menu item
+        const themeMenuItem = createMenuItem(
+            isDarkMode ? 'Light Mode' : 'Dark Mode',
+            `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                ${isDarkMode ?
+                '<circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>' :
+                '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>'}
+            </svg>`
+        );
+
+        // Toggle theme functionality
+        themeMenuItem.onclick = function (e) {
+            e.stopPropagation();
+            const newTheme = isDarkMode ? 'light' : 'dark';
+            saveUserThemePreference(newTheme);
+            window.location.reload(); // Reload to apply theme changes everywhere
+        };
+
         // Update menu items addition
         menuContainer.appendChild(langMenuWrapper);
         menuContainer.appendChild(modeMenuItem);
@@ -1201,6 +1262,7 @@
         menuContainer.appendChild(zenModeMenuItem);
         menuContainer.appendChild(plexFontMenuItem);
         menuContainer.appendChild(toggleStatsCardMenuItem); // 添加信息卡片切换选项
+        menuContainer.appendChild(themeMenuItem); // 添加主题切换选项
         menuContainer.appendChild(clearCacheMenuItem);
         menuContainer.appendChild(closeMenuItem);
 
