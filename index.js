@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         LabEx Helper
 // @namespace    http://tampermonkey.net/
-// @version      2.0.2
+// @version      2.0.3
 // @description  Helper script for labex.io website
 // @author       huhuhang
 // @match        https://labex.io/*
@@ -982,7 +982,7 @@
         const langMenuItem = createMenuItem('Switch Language', '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>');
         const modeMenuItem = createMenuItem('Lab ⇌ Tutorial', '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>', !(isLabsRoute || isTutorialsRoute));
         const clearCacheMenuItem = createMenuItem('Clear Cache', '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>');
-        const quickStartMenuItem = createMenuItem('Quick Start', '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>');
+        const quickStartMenuItem = createMenuItem('Playground', '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>');
         const zenModeMenuItem = createMenuItem('Zen Mode', '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"></path></svg>', !isLabsRoute);
         const closeMenuItem = createMenuItem('Close Helper', '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>');
 
@@ -1231,11 +1231,219 @@
             buttonContainer.style.display = 'none';
         };
 
-        // Quick Start functionality
+        // Playground functionality
         quickStartMenuItem.onclick = function (e) {
             e.stopPropagation();
-            window.open('https://labex.io/labs/linux-your-first-linux-lab-270253?hidelabby=true&hideheader=true', '_blank');
+            // Close the main menu first
+            isMenuVisible = false;
+            menuContainer.style.display = 'none';
+
+            showQuickStartModal('https://labex.io/labs/linux-your-first-linux-lab-270253?hidelabby=true&hideheader=true');
         };
+
+        // Function to show Playground modal
+        function showQuickStartModal(url) {
+
+            // --- Helper Function Definitions FIRST ---
+            let dragTarget = null, resizeTarget = null, iframeTarget = null; // Track elements
+            let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0; // Drag positions
+            let initialWidth, initialHeight, initialMouseX, initialMouseY; // Resize positions
+            let currentResizer = null; // Current resize handle
+
+            const closeModal = () => {
+                // Remove backdrop references
+                const modal = document.getElementById('quick-start-modal');
+                // if (backdrop) backdrop.style.opacity = '0'; // Removed backdrop line
+                if (modal) {
+                    modal.style.opacity = '0';
+                    modal.style.transform = 'scale(0.95)';
+                }
+                setTimeout(() => {
+                    document.removeEventListener('mousemove', elementDrag);
+                    document.removeEventListener('mouseup', closeDragElement);
+                    document.removeEventListener('mousemove', elementResize);
+                    document.removeEventListener('mouseup', closeResizeElement);
+                    // if (backdrop) backdrop.remove(); // Removed backdrop line
+                    if (modal) modal.remove();
+                }, 300);
+            };
+
+            function dragMouseDown(e) {
+                dragTarget = document.getElementById('quick-start-modal');
+                if (!dragTarget || !(e.target === modalHeader || e.target === headerTitle)) return; // Only drag by header
+                e.preventDefault();
+                pos3 = e.clientX; pos4 = e.clientY;
+                document.addEventListener('mouseup', closeDragElement);
+                document.addEventListener('mousemove', elementDrag);
+                if (modalHeader) modalHeader.style.cursor = 'grabbing';
+            }
+
+            function elementDrag(e) {
+                if (!dragTarget) return;
+                e.preventDefault();
+                pos1 = pos3 - e.clientX; pos2 = pos4 - e.clientY;
+                pos3 = e.clientX; pos4 = e.clientY;
+                let newTop = dragTarget.offsetTop - pos2;
+                let newLeft = dragTarget.offsetLeft - pos1;
+                const maxTop = window.innerHeight - dragTarget.offsetHeight;
+                const maxLeft = window.innerWidth - dragTarget.offsetWidth;
+                dragTarget.style.top = Math.max(0, Math.min(newTop, maxTop)) + "px";
+                dragTarget.style.left = Math.max(0, Math.min(newLeft, maxLeft)) + "px";
+            }
+
+            function closeDragElement() {
+                if (modalHeader) modalHeader.style.cursor = 'grab';
+                document.removeEventListener('mouseup', closeDragElement);
+                document.removeEventListener('mousemove', elementDrag);
+                dragTarget = null;
+            }
+
+            function resizeMouseDown(e, side) {
+                resizeTarget = document.getElementById('quick-start-modal');
+                iframeTarget = resizeTarget?.querySelector('iframe');
+                if (!resizeTarget) return;
+                e.preventDefault();
+                currentResizer = side;
+                initialWidth = resizeTarget.offsetWidth;
+                initialHeight = resizeTarget.offsetHeight;
+                initialMouseX = e.clientX;
+                initialMouseY = e.clientY;
+                document.addEventListener('mousemove', elementResize);
+                document.addEventListener('mouseup', closeResizeElement);
+                if (iframeTarget) iframeTarget.style.pointerEvents = 'none';
+            }
+
+            function elementResize(e) {
+                if (!currentResizer || !resizeTarget) return;
+                const dx = e.clientX - initialMouseX;
+                const dy = e.clientY - initialMouseY;
+                let newWidth = initialWidth;
+                let newHeight = initialHeight;
+                if (currentResizer.includes('e')) newWidth = initialWidth + dx;
+                if (currentResizer.includes('s')) newHeight = initialHeight + dy;
+                resizeTarget.style.width = Math.max(parseInt(resizeTarget.style.minWidth, 10) || 300, newWidth) + 'px';
+                resizeTarget.style.height = Math.max(parseInt(resizeTarget.style.minHeight, 10) || 200, newHeight) + 'px';
+            }
+
+            function closeResizeElement() {
+                if (iframeTarget) iframeTarget.style.pointerEvents = 'auto';
+                document.removeEventListener('mousemove', elementResize);
+                document.removeEventListener('mouseup', closeResizeElement);
+                currentResizer = null; resizeTarget = null; iframeTarget = null;
+            }
+
+            // --- Element Creation & Setup ---
+            // Remove existing modal/backdrop first to prevent duplicates
+            document.getElementById('quick-start-modal')?.remove();
+            // document.getElementById('quick-start-backdrop')?.remove(); // Removed backdrop line
+
+            const isDarkMode = getUserThemePreference() === 'dark';
+
+            /* // Removed backdrop creation
+            const backdrop = document.createElement('div');
+            backdrop.id = 'quick-start-backdrop';
+            backdrop.style.cssText = `...`;
+            */
+
+            const modal = document.createElement('div');
+            modal.id = 'quick-start-modal';
+            modal.style.cssText = `
+                position: fixed;
+                top: 5vh; left: 5vw; width: 90vw; height: 90vh;
+                min-width: 300px; min-height: 200px;
+                background-color: ${isDarkMode ? '#1f2937' : '#ffffff'};
+                border-radius: 16px;
+                box-shadow: ${isDarkMode ? '0 10px 30px rgba(0, 0, 0, 0.4)' : '0 10px 30px rgba(0, 0, 0, 0.15)'};
+                z-index: 10001;
+                display: flex; flex-direction: column; overflow: hidden;
+                opacity: 0; transform: scale(0.95);
+                transition: opacity 0.3s ease, transform 0.3s ease;
+                border: 1px solid ${isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'};
+            `;
+
+            const modalHeader = document.createElement('div');
+            modalHeader.style.cssText = `
+                height: 40px;
+                background-color: ${isDarkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.03)'};
+                border-bottom: 1px solid ${isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'};
+                cursor: grab;
+                display: flex; align-items: center; padding: 0 12px;
+                flex-shrink: 0; position: relative;
+            `;
+            modalHeader.onmousedown = dragMouseDown; // Assign drag handler
+
+            const headerTitle = document.createElement('span');
+            headerTitle.textContent = 'Playground';
+            headerTitle.style.cssText = `
+                font-size: 14px; font-weight: 600;
+                color: ${isDarkMode ? '#E5E7EB' : '#374151'};
+                pointer-events: none; /* Prevent title from interfering with drag */
+            `;
+            modalHeader.appendChild(headerTitle);
+
+            const closeButton = document.createElement('button');
+            closeButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
+            closeButton.style.cssText = `
+                position: absolute; top: 50%; right: 10px; transform: translateY(-50%);
+                background: ${isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)'};
+                border: none; border-radius: 50%; cursor: pointer; padding: 5px;
+                display: flex; align-items: center; justify-content: center;
+                color: ${isDarkMode ? '#9CA3AF' : '#6B7280'};
+                transition: background-color 0.2s ease, color 0.2s ease; z-index: 2;
+            `;
+            closeButton.onmouseover = () => {
+                closeButton.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.1)';
+                closeButton.style.color = isDarkMode ? '#E5E7EB' : '#374151';
+            };
+            closeButton.onmouseout = () => {
+                closeButton.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
+                closeButton.style.color = isDarkMode ? '#9CA3AF' : '#6B7280';
+            };
+            closeButton.onclick = closeModal;
+            modalHeader.appendChild(closeButton);
+
+            const iframeContainer = document.createElement('div');
+            iframeContainer.style.cssText = `flex-grow: 1; position: relative; overflow: hidden;`;
+
+            const iframe = document.createElement('iframe');
+            iframe.src = url;
+            iframe.style.cssText = `width: 100%; height: 100%; border: none; display: block;`;
+            iframeContainer.appendChild(iframe);
+
+            // Create and add resize handles
+            const createResizeHandle = (cursor, side) => {
+                const handle = document.createElement('div');
+                handle.style.cssText = `
+                    position: absolute;
+                    background: transparent;
+                    z-index: 1; /* Ensure handles are clickable */
+                    ${side === 'se' ? 'width: 15px; height: 15px; bottom: 0; right: 0; cursor: nwse-resize;' :
+                        side === 'e' ? 'width: 10px; height: 100%; top: 0; right: 0; cursor: ew-resize;' :
+                            side === 's' ? 'width: 100%; height: 10px; bottom: 0; left: 0; cursor: ns-resize;' : ''}
+                `;
+                handle.onmousedown = (e) => resizeMouseDown(e, side);
+                return handle;
+            };
+            iframeContainer.appendChild(createResizeHandle('nwse-resize', 'se'));
+            iframeContainer.appendChild(createResizeHandle('ew-resize', 'e'));
+            iframeContainer.appendChild(createResizeHandle('ns-resize', 's'));
+
+            // Assemble modal
+            modal.appendChild(modalHeader);
+            modal.appendChild(iframeContainer);
+
+            // Add to body & show
+            // document.body.appendChild(backdrop); // Removed backdrop line
+            document.body.appendChild(modal);
+            requestAnimationFrame(() => {
+                // backdrop.style.opacity = '1'; // Removed backdrop line
+                modal.style.opacity = '1';
+                modal.style.transform = 'scale(1)';
+            });
+
+            // Add backdrop click listener AFTER creating elements
+            // backdrop.onclick = closeModal; // Removed backdrop line
+        }
 
         // Theme toggle menu item
         const themeMenuItem = createMenuItem(
