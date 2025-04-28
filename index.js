@@ -1241,150 +1241,199 @@
             showQuickStartModal('https://labex.io/labs/linux-your-first-linux-lab-270253?hidelabby=true&hideheader=true');
         };
 
-        // Function to show Playground modal
+        // --- CSS Class for shifting body ---
+        const bodyShiftStyleId = 'labex-helper-body-shift-style';
+        function addBodyShiftStyle() {
+            if (document.getElementById(bodyShiftStyleId)) return;
+            const style = document.createElement('style');
+            style.id = bodyShiftStyleId;
+            // Use CSS variable for width, default to 1/3
+            style.textContent = `
+                :root {
+                    --labex-body-width: calc(100vw / 3);
+                    --labex-panel-width: calc(100vw * 2 / 3);
+                }
+                body.labex-helper-body-shifted {
+                    width: var(--labex-body-width) !important;
+                    overflow-x: hidden !important;
+                    position: relative !important; /* Or fixed, adjust if needed */
+                    left: 0 !important;
+                    transition: none !important; /* Disable transition during drag for smoother resize */
+                }
+                #quick-start-panel {
+                    width: var(--labex-panel-width) !important;
+                    transition: opacity 0.3s ease, transform 0.3s ease, width 0s !important; /* Disable width transition during drag */
+                }
+                #quick-start-divider {
+                    position: fixed;
+                    top: 0;
+                    left: var(--labex-body-width); /* Position depends on body width */
+                    width: 6px; /* Divider width */
+                    height: 100vh;
+                    background-color: ${getUserThemePreference() === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'};
+                    cursor: col-resize;
+                    z-index: 10001; /* Above panel content but potentially below header */
+                    transition: background-color 0.2s ease;
+                    transform: translateX(-3px); /* Center the divider visually */
+                    user-select: none; /* Prevent text selection during drag */
+                }
+                #quick-start-divider:hover {
+                    background-color: ${getUserThemePreference() === 'dark' ? '#3b82f6' : '#60a5fa'};
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
+        function removeBodyShiftStyle() {
+            const style = document.getElementById(bodyShiftStyleId);
+            if (style) style.remove();
+            document.body.classList.remove('labex-helper-body-shifted');
+            // Reset CSS variables if needed, though removing the class might suffice
+            document.documentElement.style.removeProperty('--labex-body-width');
+            document.documentElement.style.removeProperty('--labex-panel-width');
+        }
+        // --- End CSS Class ---
+
+        // Function to show Playground panel (modified from modal)
         function showQuickStartModal(url) {
 
-            // --- Helper Function Definitions FIRST ---
-            let dragTarget = null, resizeTarget = null, iframeTarget = null; // Track elements
-            let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0; // Drag positions
-            let initialWidth, initialHeight, initialMouseX, initialMouseY; // Resize positions
-            let currentResizer = null; // Current resize handle
+            let isResizing = false;
+            let initialMouseX = 0;
+            let initialBodyWidth = 0;
+            let panelElement = null;
+            let dividerElement = null;
+            let iframeElement = null;
 
-            const closeModal = () => {
-                // Remove backdrop references
-                const modal = document.getElementById('quick-start-modal');
-                // if (backdrop) backdrop.style.opacity = '0'; // Removed backdrop line
-                if (modal) {
-                    modal.style.opacity = '0';
-                    modal.style.transform = 'scale(0.95)';
+            // --- Helper Function Definition ---
+            const closePanel = () => {
+                panelElement = document.getElementById('quick-start-panel');
+                dividerElement = document.getElementById('quick-start-divider');
+
+                if (panelElement) {
+                    panelElement.style.opacity = '0';
+                    panelElement.style.transform = 'translateX(100%)'; // Slide out right
                 }
+                if (dividerElement) {
+                    dividerElement.style.opacity = '0'; // Fade out divider too
+                }
+
+                removeBodyShiftStyle(); // Restore body width
+
                 setTimeout(() => {
-                    document.removeEventListener('mousemove', elementDrag);
-                    document.removeEventListener('mouseup', closeDragElement);
-                    document.removeEventListener('mousemove', elementResize);
-                    document.removeEventListener('mouseup', closeResizeElement);
-                    // if (backdrop) backdrop.remove(); // Removed backdrop line
-                    if (modal) modal.remove();
-                }, 300);
+                    if (panelElement) panelElement.remove();
+                    if (dividerElement) dividerElement.remove();
+                    // Clean up potential global listeners if mouseup didn't fire
+                    document.removeEventListener('mousemove', handleMouseMove);
+                    document.removeEventListener('mouseup', handleMouseUp);
+                }, 300); // Remove after transition
             };
 
-            function dragMouseDown(e) {
-                dragTarget = document.getElementById('quick-start-modal');
-                if (!dragTarget || !(e.target === modalHeader || e.target === headerTitle)) return; // Only drag by header
-                e.preventDefault();
-                pos3 = e.clientX; pos4 = e.clientY;
-                document.addEventListener('mouseup', closeDragElement);
-                document.addEventListener('mousemove', elementDrag);
-                if (modalHeader) modalHeader.style.cursor = 'grabbing';
-            }
-
-            function elementDrag(e) {
-                if (!dragTarget) return;
-                e.preventDefault();
-                pos1 = pos3 - e.clientX; pos2 = pos4 - e.clientY;
-                pos3 = e.clientX; pos4 = e.clientY;
-                let newTop = dragTarget.offsetTop - pos2;
-                let newLeft = dragTarget.offsetLeft - pos1;
-                const maxTop = window.innerHeight - dragTarget.offsetHeight;
-                const maxLeft = window.innerWidth - dragTarget.offsetWidth;
-                dragTarget.style.top = Math.max(0, Math.min(newTop, maxTop)) + "px";
-                dragTarget.style.left = Math.max(0, Math.min(newLeft, maxLeft)) + "px";
-            }
-
-            function closeDragElement() {
-                if (modalHeader) modalHeader.style.cursor = 'grab';
-                document.removeEventListener('mouseup', closeDragElement);
-                document.removeEventListener('mousemove', elementDrag);
-                dragTarget = null;
-            }
-
-            function resizeMouseDown(e, side) {
-                resizeTarget = document.getElementById('quick-start-modal');
-                iframeTarget = resizeTarget?.querySelector('iframe');
-                if (!resizeTarget) return;
-                e.preventDefault();
-                currentResizer = side;
-                initialWidth = resizeTarget.offsetWidth;
-                initialHeight = resizeTarget.offsetHeight;
+            // --- Drag Handlers ---
+            const handleMouseDown = (e) => {
+                isResizing = true;
                 initialMouseX = e.clientX;
-                initialMouseY = e.clientY;
-                document.addEventListener('mousemove', elementResize);
-                document.addEventListener('mouseup', closeResizeElement);
-                if (iframeTarget) iframeTarget.style.pointerEvents = 'none';
-            }
+                panelElement = document.getElementById('quick-start-panel');
+                dividerElement = document.getElementById('quick-start-divider');
+                iframeElement = panelElement?.querySelector('iframe');
 
-            function elementResize(e) {
-                if (!currentResizer || !resizeTarget) return;
-                const dx = e.clientX - initialMouseX;
-                const dy = e.clientY - initialMouseY;
-                let newWidth = initialWidth;
-                let newHeight = initialHeight;
-                if (currentResizer.includes('e')) newWidth = initialWidth + dx;
-                if (currentResizer.includes('s')) newHeight = initialHeight + dy;
-                resizeTarget.style.width = Math.max(parseInt(resizeTarget.style.minWidth, 10) || 300, newWidth) + 'px';
-                resizeTarget.style.height = Math.max(parseInt(resizeTarget.style.minHeight, 10) || 200, newHeight) + 'px';
-            }
+                // Get initial width from CSS variable or computed style
+                const currentBodyWidth = getComputedStyle(document.documentElement).getPropertyValue('--labex-body-width');
+                initialBodyWidth = parseFloat(currentBodyWidth); // Assuming it's in pixels or easily convertible
 
-            function closeResizeElement() {
-                if (iframeTarget) iframeTarget.style.pointerEvents = 'auto';
-                document.removeEventListener('mousemove', elementResize);
-                document.removeEventListener('mouseup', closeResizeElement);
-                currentResizer = null; resizeTarget = null; iframeTarget = null;
-            }
+                // Fallback if CSS variable isn't set or is complex
+                if (isNaN(initialBodyWidth) || initialBodyWidth === 0) {
+                    initialBodyWidth = document.body.offsetWidth;
+                }
+
+
+                document.addEventListener('mousemove', handleMouseMove);
+                document.addEventListener('mouseup', handleMouseUp);
+                if (iframeElement) iframeElement.style.pointerEvents = 'none'; // Disable iframe interaction during resize
+                if (dividerElement) dividerElement.style.backgroundColor = getUserThemePreference() === 'dark' ? '#3b82f6' : '#60a5fa'; // Active color
+                document.body.style.cursor = 'col-resize'; // Change cursor for whole body
+                document.body.style.userSelect = 'none'; // Prevent selection during drag
+            };
+
+            const handleMouseMove = (e) => {
+                if (!isResizing) return;
+
+                const currentMouseX = e.clientX;
+                const dx = currentMouseX - initialMouseX;
+                let newBodyWidth = initialBodyWidth + dx;
+
+                // Constraints - ensure minimum width (e.g., 20% of viewport)
+                const minWidth = window.innerWidth * 0.20;
+                const maxWidth = window.innerWidth * 0.80; // Max width for body (min for panel)
+
+                newBodyWidth = Math.max(minWidth, Math.min(newBodyWidth, maxWidth));
+
+                const newPanelWidth = window.innerWidth - newBodyWidth;
+
+                // Update CSS variables
+                document.documentElement.style.setProperty('--labex-body-width', `${newBodyWidth}px`);
+                document.documentElement.style.setProperty('--labex-panel-width', `${newPanelWidth}px`);
+                // Divider position updates automatically via CSS variable `left: var(--labex-body-width);`
+            };
+
+            const handleMouseUp = () => {
+                if (!isResizing) return;
+                isResizing = false;
+                document.removeEventListener('mousemove', handleMouseMove);
+                document.removeEventListener('mouseup', handleMouseUp);
+                if (iframeElement) iframeElement.style.pointerEvents = 'auto'; // Re-enable iframe
+                if (dividerElement) dividerElement.style.backgroundColor = getUserThemePreference() === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'; // Reset color
+                document.body.style.cursor = 'default'; // Reset cursor
+                document.body.style.userSelect = 'auto'; // Re-enable selection
+            };
+
 
             // --- Element Creation & Setup ---
-            // Remove existing modal/backdrop first to prevent duplicates
-            document.getElementById('quick-start-modal')?.remove();
-            // document.getElementById('quick-start-backdrop')?.remove(); // Removed backdrop line
+            // Remove existing panel/divider first
+            document.getElementById('quick-start-panel')?.remove();
+            document.getElementById('quick-start-divider')?.remove();
 
             const isDarkMode = getUserThemePreference() === 'dark';
 
-            /* // Removed backdrop creation
-            const backdrop = document.createElement('div');
-            backdrop.id = 'quick-start-backdrop';
-            backdrop.style.cssText = `...`;
-            */
+            // Add styles to shift body content & define divider style
+            addBodyShiftStyle();
+            document.body.classList.add('labex-helper-body-shifted');
 
-            const modal = document.createElement('div');
-            modal.id = 'quick-start-modal';
-            modal.style.cssText = `
+            panelElement = document.createElement('div'); // Use panelElement consistently
+            panelElement.id = 'quick-start-panel';
+            panelElement.style.cssText = `
                 position: fixed;
-                top: 5vh; left: 5vw; width: 90vw; height: 90vh;
-                min-width: 300px; min-height: 200px;
+                top: 0; right: 0; /* Width is now controlled by CSS variable */
+                height: 100vh;
                 background-color: ${isDarkMode ? '#1f2937' : '#ffffff'};
-                border-radius: 16px;
-                box-shadow: ${isDarkMode ? '0 10px 30px rgba(0, 0, 0, 0.4)' : '0 10px 30px rgba(0, 0, 0, 0.15)'};
-                z-index: 10001;
+                box-shadow: -5px 0 15px rgba(0, 0, 0, ${isDarkMode ? 0.2 : 0.1}); /* Shadow on the left */
+                z-index: 10000;
                 display: flex; flex-direction: column; overflow: hidden;
-                opacity: 0; transform: scale(0.95);
-                transition: opacity 0.3s ease, transform 0.3s ease;
-                border: 1px solid ${isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'};
+                opacity: 0; transform: translateX(100%);
+                /* Transitions managed in CSS */
             `;
 
-            const modalHeader = document.createElement('div');
-            modalHeader.style.cssText = `
+            const panelHeader = document.createElement('div');
+            panelHeader.style.cssText = `
                 height: 40px;
                 background-color: ${isDarkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.03)'};
                 border-bottom: 1px solid ${isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'};
-                cursor: grab;
                 display: flex; align-items: center; padding: 0 12px;
                 flex-shrink: 0; position: relative;
             `;
-            modalHeader.onmousedown = dragMouseDown; // Assign drag handler
 
             const headerTitle = document.createElement('span');
             headerTitle.textContent = 'Playground';
             headerTitle.style.cssText = `
                 font-size: 14px; font-weight: 600;
                 color: ${isDarkMode ? '#E5E7EB' : '#374151'};
-                pointer-events: none; /* Prevent title from interfering with drag */
+                margin-left: 8px;
             `;
-            modalHeader.appendChild(headerTitle);
+            panelHeader.appendChild(headerTitle);
 
             const closeButton = document.createElement('button');
             closeButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
             closeButton.style.cssText = `
-                position: absolute; top: 50%; right: 10px; transform: translateY(-50%);
+                margin-left: auto;
                 background: ${isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)'};
                 border: none; border-radius: 50%; cursor: pointer; padding: 5px;
                 display: flex; align-items: center; justify-content: center;
@@ -1399,50 +1448,36 @@
                 closeButton.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
                 closeButton.style.color = isDarkMode ? '#9CA3AF' : '#6B7280';
             };
-            closeButton.onclick = closeModal;
-            modalHeader.appendChild(closeButton);
+            closeButton.onclick = closePanel;
+            panelHeader.appendChild(closeButton);
 
             const iframeContainer = document.createElement('div');
             iframeContainer.style.cssText = `flex-grow: 1; position: relative; overflow: hidden;`;
 
-            const iframe = document.createElement('iframe');
-            iframe.src = url;
-            iframe.style.cssText = `width: 100%; height: 100%; border: none; display: block;`;
-            iframeContainer.appendChild(iframe);
+            iframeElement = document.createElement('iframe'); // Use iframeElement
+            iframeElement.src = url;
+            iframeElement.style.cssText = `width: 100%; height: 100%; border: none; display: block;`;
+            iframeContainer.appendChild(iframeElement);
 
-            // Create and add resize handles
-            const createResizeHandle = (cursor, side) => {
-                const handle = document.createElement('div');
-                handle.style.cssText = `
-                    position: absolute;
-                    background: transparent;
-                    z-index: 1; /* Ensure handles are clickable */
-                    ${side === 'se' ? 'width: 15px; height: 15px; bottom: 0; right: 0; cursor: nwse-resize;' :
-                        side === 'e' ? 'width: 10px; height: 100%; top: 0; right: 0; cursor: ew-resize;' :
-                            side === 's' ? 'width: 100%; height: 10px; bottom: 0; left: 0; cursor: ns-resize;' : ''}
-                `;
-                handle.onmousedown = (e) => resizeMouseDown(e, side);
-                return handle;
-            };
-            iframeContainer.appendChild(createResizeHandle('nwse-resize', 'se'));
-            iframeContainer.appendChild(createResizeHandle('ew-resize', 'e'));
-            iframeContainer.appendChild(createResizeHandle('ns-resize', 's'));
+            // Assemble panel
+            panelElement.appendChild(panelHeader);
+            panelElement.appendChild(iframeContainer);
 
-            // Assemble modal
-            modal.appendChild(modalHeader);
-            modal.appendChild(iframeContainer);
+            // Create the divider
+            dividerElement = document.createElement('div'); // Use dividerElement
+            dividerElement.id = 'quick-start-divider';
+            // Styles are applied via CSS in addBodyShiftStyle
+            dividerElement.onmousedown = handleMouseDown; // Attach drag handler
 
             // Add to body & show
-            // document.body.appendChild(backdrop); // Removed backdrop line
-            document.body.appendChild(modal);
-            requestAnimationFrame(() => {
-                // backdrop.style.opacity = '1'; // Removed backdrop line
-                modal.style.opacity = '1';
-                modal.style.transform = 'scale(1)';
-            });
+            document.body.appendChild(panelElement);
+            document.body.appendChild(dividerElement); // Add divider after panel
 
-            // Add backdrop click listener AFTER creating elements
-            // backdrop.onclick = closeModal; // Removed backdrop line
+            requestAnimationFrame(() => {
+                panelElement.style.opacity = '1';
+                panelElement.style.transform = 'translateX(0)'; // Slide in
+                dividerElement.style.opacity = '1'; // Fade in divider
+            });
         }
 
         // Theme toggle menu item
