@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         LabEx Helper
 // @namespace    http://tampermonkey.net/
-// @version      2.0.4
+// @version      2.0.5
 // @description  Helper script for labex.io website
 // @author       huhuhang
 // @match        https://labex.io/*
@@ -991,7 +991,7 @@
             isStatsCardVisible ? 'Hide Stats Card' : 'Show Stats Card',
             `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>`,
-            !isLabsRoute
+            !(isLabsRoute || isTutorialsRoute) // 修改这里，让它在 labs 和 tutorials 页面都可用
         );
 
         // 信息卡片切换功能
@@ -1483,10 +1483,11 @@
 
         // --- Lab Data Fetching Logic ---
         const currentUrl = window.location.href;
-        const labMatch = currentUrl.match(/\/labs\/([^\/?#]+)/);
-        if (labMatch && labMatch[1] && isStatsCardVisible) {
-            const labAlias = labMatch[1];
-            fetchAndDisplayLabData(labAlias, buttonContainer);
+        // 修改匹配逻辑，同时支持 labs 和 tutorials
+        const contentMatch = currentUrl.match(/\/(labs|tutorials)\/([^\/?#]+)/);
+        if (contentMatch && contentMatch[2] && isStatsCardVisible) {
+            const contentAlias = contentMatch[2];
+            fetchAndDisplayLabData(contentAlias, buttonContainer);
 
             // 确保统计卡片上的链接可点击
             setTimeout(() => {
