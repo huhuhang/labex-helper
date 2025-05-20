@@ -1111,7 +1111,9 @@
             { code: 'fr', name: 'Français', flag: '🇫🇷' },
             { code: 'de', name: 'Deutsch', flag: '🇩🇪' },
             { code: 'ja', name: '日本語', flag: '🇯🇵' },
-            { code: 'ru', name: 'Русский', flag: '🇷🇺' }
+            { code: 'ru', name: 'Русский', flag: '🇷🇺' },
+            { code: 'ko', name: '한국어', flag: '🇰🇷' },
+            { code: 'pt', name: 'Português', flag: '🇧🇷' },
         ];
 
         languages.forEach(lang => {
