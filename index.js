@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         LabEx Helper
 // @namespace    http://tampermonkey.net/
-// @version      2.0.6
+// @version      2.0.7
 // @description  Helper script for labex.io website
 // @author       huhuhang
 // @match        https://labex.io/*
@@ -1126,7 +1126,7 @@
 
                 if (urlParts.length > 1) {
                     let path = urlParts[1];
-                    path = path.replace(/^(zh|es|fr|de|ja|ru)\//, '');
+                    path = path.replace(/^(zh|es|fr|de|ja|ru|ko|pt)\//, '');
                     const newPath = lang.code === 'en' ? path : `${lang.code}/${path}`;
                     const newUrl = `${urlParts[0]}${baseUrl}${newPath}`;
                     window.location.href = newUrl;
